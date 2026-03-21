@@ -1,0 +1,36 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# MATLAB
+*.asv
+*.m~
+slprj/
+codegen/
+
+# Large binary test vectors (keep stacked binaries, skip individual)
+equivalence_tests/test_vectors/input_*.bin
+equivalence_tests/test_vectors/output_*.bin
+
+# Large binary blobs (use Git LFS or download separately)
+equivalence_tests/test_vectors/all_inputs_100x3x224x224.bin
+*.pt2
+*.onnx
+*.mat
+**/largeDnnConstants*.bin
+option2_pytorch_coder/mexOutputDir/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Claude internal
+.claude/
+*.onnx.data

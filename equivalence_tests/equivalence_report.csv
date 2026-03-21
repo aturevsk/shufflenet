@@ -1,0 +1,4 @@
+Option,MaxAbsErr,MeanAbsErr,RelL2Err,Top1_Pct,CosineSim,Status,AvgInferMs
+Option2_PyTorchCoder,NaN,NaN,NaN,NaN,NaN,SKIPPED,NaN
+Option3_importPyTorch,NaN,NaN,NaN,NaN,NaN,SKIPPED,NaN
+Option4_importONNX,NaN,NaN,NaN,NaN,NaN,SKIPPED,NaN

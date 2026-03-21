@@ -1,0 +1,172 @@
+================================================================================
+  ShuffleNet V2 -- Generated C Code Metrics
+  Generated: 2026-03-21
+================================================================================
+
+PROJECT OVERVIEW
+----------------
+  Total files (excl .venv):    539
+  Total size  (excl .venv):    216.4 MB  (226,931,721 bytes)
+  Total .m files:              107
+  Total .m lines:              12,101
+
+================================================================================
+COMPARISON TABLE -- Generated C/H Code by Option
+================================================================================
+
+Metric                  | Option 1       | Option 2       | Option 2       | Option 3           | Option 4
+                        | Handcrafted    | PyTorch Coder  | PyTorch Coder  | importPyTorch      | ONNX Import
+                        |                | (embedded)     | (mex)          |                    | (embedded)
+------------------------|----------------|----------------|----------------|--------------------|----------------
+.c file count           |       2        |       8        |       8        | 0 (no C codegen)   |      15
+.h file count           |       1        |      10        |      11        | 0 (no C codegen)   |      18
+Total C/H files         |       3        |      18        |      19        | 0                  |      33
+.c lines                |   1,660        |  63,586        |  65,313        | 0                  |  64,612
+.h lines                |     362        |     385        |     403        | 0                  |     807
+Total lines (C+H)       |   2,022        |  63,971        |  65,716        | 0                  |  65,419
+Total bytes (C+H)       |  73,260        | 4,545,401      | 4,609,056      | 0                  | 4,602,930
+Total bytes (KB)        |    71.5 KB     |  4,438.9 KB    |  4,501.0 KB    | 0                  |  4,495.0 KB
+Total bytes (MB)        |     0.07 MB    |     4.33 MB    |     4.39 MB    | 0                  |     4.39 MB
+
+================================================================================
+DETAILED FILE LISTINGS
+================================================================================
+
+--- OPTION 1: option1_handcrafted_c/ ---
+  .c files:
+    main.c                           445 lines    14,731 bytes
+    shufflenet_v2.c                1,215 lines    44,973 bytes
+  .h files:
+    shufflenet_v2.h                  362 lines    13,556 bytes
+
+--- OPTION 2: option2_pytorch_coder/embeddedOutputDir/ ---
+  .c files:
+    examples/main.c                  117 lines     3,958 bytes
+    mInvoke_shufflenet.c          62,977 lines 4,516,364 bytes
+    mInvoke_shufflenet_data.c        20 lines       442 bytes
+    mInvoke_shufflenet_initialize.c  30 lines       647 bytes
+    mInvoke_shufflenet_terminate.c   28 lines       583 bytes
+    interface/_coder_mInvoke_shufflenet_api.c     209 lines  6,146 bytes
+    interface/_coder_mInvoke_shufflenet_info.c    127 lines  6,025 bytes
+    interface/_coder_mInvoke_shufflenet_mex.c      78 lines  2,136 bytes
+  .h files:
+    examples/main.h                   61 lines     2,394 bytes
+    mInvoke_shufflenet.h              38 lines       709 bytes
+    mInvoke_shufflenet_data.h         26 lines       543 bytes
+    mInvoke_shufflenet_initialize.h   34 lines       634 bytes
+    mInvoke_shufflenet_terminate.h    34 lines       629 bytes
+    mInvoke_shufflenet_types.h        21 lines       427 bytes
+    rtwtypes.h                        47 lines     1,117 bytes
+    interface/_coder_mInvoke_shufflenet_api.h      51 lines  1,078 bytes
+    interface/_coder_mInvoke_shufflenet_info.h     32 lines    602 bytes
+    interface/_coder_mInvoke_shufflenet_mex.h      41 lines    967 bytes
+
+--- OPTION 2: option2_pytorch_coder/mexOutputDir/ ---
+  .c files:
+    mInvoke_shufflenet.c          64,824 lines 4,582,836 bytes
+    mInvoke_shufflenet_data.c        36 lines     1,266 bytes
+    mInvoke_shufflenet_initialize.c  45 lines     1,116 bytes
+    mInvoke_shufflenet_terminate.c   62 lines     1,778 bytes
+    rt_nonfinite.c                   31 lines       627 bytes
+    interface/_coder_mInvoke_shufflenet_api.c     108 lines  3,459 bytes
+    interface/_coder_mInvoke_shufflenet_info.c    116 lines  5,848 bytes
+    interface/_coder_mInvoke_shufflenet_mex.c      91 lines  3,029 bytes
+  .h files:
+    mInvoke_shufflenet.h              34 lines       820 bytes
+    mInvoke_shufflenet_data.h         30 lines       699 bytes
+    mInvoke_shufflenet_initialize.h   25 lines       513 bytes
+    mInvoke_shufflenet_internal_types.h 75 lines   1,690 bytes
+    mInvoke_shufflenet_terminate.h    27 lines       548 bytes
+    mInvoke_shufflenet_types.h        70 lines     1,672 bytes
+    rt_nonfinite.h                    37 lines       807 bytes
+    rtwtypes.h                        26 lines       388 bytes
+    interface/_coder_mInvoke_shufflenet_api.h      27 lines    651 bytes
+    interface/_coder_mInvoke_shufflenet_info.h     19 lines    402 bytes
+    interface/_coder_mInvoke_shufflenet_mex.h      33 lines    907 bytes
+
+--- OPTION 3: option3_import_pytorch/ ---
+  NO C CODE GENERATED.
+  Code generation produced only:
+    - .bin weight files (networkParamsInfo_shufflenet_dlnetwork.bin, *_1.bin)
+    - report.mldatx files in embeddedDir/, embeddedDirA/, mexOutputDir/
+    - 30 MATLAB .m files in +shufflenet_exported/ package
+  Note: importPyTorchNetwork generates a dlnetwork .mat, not standalone C.
+
+--- OPTION 4: option4_onnx_import/embeddedDir/ ---
+  .c files:
+    examples/main.c                  117 lines     4,003 bytes
+    callPredict.c                    799 lines    36,059 bytes
+    conv2dDirectOptimizedColMajor.c 61,961 lines 4,475,728 bytes
+    mean.c                            39 lines       724 bytes
+    permute.c                        220 lines     4,505 bytes
+    predict_shufflenet_onnx.c         43 lines     1,101 bytes
+    predict_shufflenet_onnx_initialize.c  26 lines   526 bytes
+    predict_shufflenet_onnx_rtwutil.c    351 lines 11,195 bytes
+    predict_shufflenet_onnx_terminate.c   26 lines   522 bytes
+    Shape_To_SliceLayer1000.c         78 lines     2,136 bytes
+    Shape_To_SliceLayer1004.c         78 lines     2,138 bytes
+    Shape_To_SliceLayer1012.c         78 lines     2,138 bytes
+    interface/_coder_predict_shufflenet_onnx_api.c   210 lines  6,186 bytes
+    interface/_coder_predict_shufflenet_onnx_info.c  507 lines 33,847 bytes
+    interface/_coder_predict_shufflenet_onnx_mex.c    79 lines  2,249 bytes
+  .h files:
+    examples/main.h                   61 lines     2,399 bytes
+    callPredict.h                     34 lines       587 bytes
+    conv2dDirectOptimizedColMajor.h  144 lines     4,898 bytes
+    mean.h                            34 lines       533 bytes
+    permute.h                         52 lines     1,044 bytes
+    predict_shufflenet_onnx.h         34 lines       639 bytes
+    predict_shufflenet_onnx_data.h    23 lines       483 bytes
+    predict_shufflenet_onnx_initialize.h  34 lines   659 bytes
+    predict_shufflenet_onnx_rtwutil.h     53 lines 1,406 bytes
+    predict_shufflenet_onnx_terminate.h   34 lines   654 bytes
+    predict_shufflenet_onnx_types.h   21 lines       447 bytes
+    rtwtypes.h                        47 lines     1,117 bytes
+    Shape_To_SliceLayer1000.h         37 lines       740 bytes
+    Shape_To_SliceLayer1004.h         37 lines       740 bytes
+    Shape_To_SliceLayer1012.h         37 lines       740 bytes
+    interface/_coder_predict_shufflenet_onnx_api.h    52 lines 1,163 bytes
+    interface/_coder_predict_shufflenet_onnx_info.h   32 lines   622 bytes
+    interface/_coder_predict_shufflenet_onnx_mex.h    41 lines 1,002 bytes
+
+================================================================================
+KEY OBSERVATIONS
+================================================================================
+
+1. OPTION 1 (Handcrafted C) is ~32x smaller than auto-generated options
+   (2,022 total lines vs ~65,000 lines for Options 2 and 4).
+
+2. OPTIONS 2 and 4 produce nearly identical total line counts (~64-65K lines)
+   because the bulk is a single monolithic file containing embedded weights:
+   - Option 2: mInvoke_shufflenet.c (62,977 / 64,824 lines)
+   - Option 4: conv2dDirectOptimizedColMajor.c (61,961 lines)
+
+3. OPTION 3 (importPyTorchNetwork) did NOT produce standalone C code.
+   It generates a dlnetwork .mat file and binary weight files, relying on
+   MATLAB Deep Learning Toolbox runtime rather than pure C inference.
+
+4. OPTION 4 has the most modular structure (33 files, 15 .c + 18 .h)
+   with separate files for conv2d, permute, mean, shape slicing, etc.
+
+5. All auto-generated byte sizes are within 1.4% of each other (~4.4 MB).
+
+================================================================================
+MATLAB .m FILES (all options, 107 files, 12,101 total lines)
+================================================================================
+
+benchmark/benchmark_analysis.m                                   368 lines
+equivalence_tests/run_all_equivalence_tests.m                     80 lines
+equivalence_tests/validate_matlab_equivalence.m                  452 lines
+equivalence_tests/validate_mex_equivalence.m                     210 lines
+option2_pytorch_coder/generate_code_pytorch_coder.m              347 lines
+option2_pytorch_coder/mInvoke_shufflenet.m                        36 lines
+option3_import_pytorch/fix_codegen_pragmas.m                      78 lines
+option3_import_pytorch/import_and_generate.m                     479 lines
+option3_import_pytorch/predict_shufflenet.m                       28 lines
+option3_import_pytorch/run_option3.m                              98 lines
+option3_import_pytorch/+shufflenet_exported/ (30 files)     ~1,290 lines
+option4_onnx_import/import_onnx_and_generate.m                   467 lines
+option4_onnx_import/predict_shufflenet_onnx.m                     25 lines
+option4_onnx_import/run_option4.m                                136 lines
+option4_onnx_import/+shufflenet_v2/ (59 files)              ~7,520 lines
+run_all_codegen.m                                                135 lines
