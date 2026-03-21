@@ -30,9 +30,9 @@
 /*  Platform abstraction                                              */
 /* ================================================================== */
 
-#if defined(STM32F746xx)
+#if defined(__ARM_ARCH)
   /* ---- ARM Cortex-M target ---- */
-  #include "stm32f7xx.h"    /* CMSIS device header */
+  #include <time.h>         /* timing */
 
   #define SN2_TARGET_ARM     1
 
@@ -52,7 +52,7 @@
       return DWT->CYCCNT;
   }
 
-  /** SDRAM base address on STM32F746G-Discovery (FMC Bank 1, SDRAM Bank 2) */
+  /** External memory base address (platform-specific) */
   #define SDRAM_BASE   0xC0000000U
   #define SDRAM_SIZE   (8 * 1024 * 1024)  /* 8 MB */
 
@@ -238,7 +238,7 @@ int main(int argc, char *argv[])
     printf("====================================\n\n");
 
 #if SN2_TARGET_ARM
-    printf("Platform: STM32F746G-Discovery (Cortex-M7 @ 216 MHz)\n");
+    printf("Platform: ARM Cortex-A embedded target\n");
 #else
     printf("Platform: Host simulation\n");
 #endif

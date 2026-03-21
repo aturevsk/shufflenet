@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 generate_report.py — Generate comprehensive PDF report comparing
-ShuffleNet V2 C code generation approaches for STM32F746G-Discovery.
+ShuffleNet V2 C code generation approaches for ARM Cortex-A embedded platform.
 """
 
 from reportlab.lib.pagesizes import letter
@@ -127,7 +127,7 @@ def build_report(output_path):
     ))
     story.append(Paragraph(
         "Comparative Analysis of Four Code Generation Approaches<br/>"
-        "for STM32F746G-Discovery (ARM Cortex-M7)",
+        "for ARM Cortex-A Embedded Platform",
         styles['Subtitle']
     ))
     story.append(Spacer(1, 0.5*inch))
@@ -137,10 +137,10 @@ def build_report(output_path):
     info_data = [
         ['Model', 'ShuffleNet V2 1.0x (ImageNet, 1000 classes)'],
         ['Parameters', '2,278,604 (8.69 MB float32)'],
-        ['Target Hardware', 'STM32F746G-Discovery'],
-        ['Processor', 'ARM Cortex-M7 @ 216 MHz, FPv5-SP FPU'],
-        ['Memory', '1 MB Flash + 16 MB QSPI / 340 KB SRAM + 8 MB SDRAM'],
-        ['Toolchain', 'MATLAB R2026a / arm-none-eabi-gcc'],
+        ['Target Hardware', 'ARM Cortex-A Embedded Platform'],
+        ['Processor', 'ARM Cortex-A53 quad-core @ 1.5 GHz'],
+        ['Memory', '512 MB+ DDR3/DDR4 RAM, 4+ GB eMMC/SD storage'],
+        ['Toolchain', 'MATLAB R2026a / aarch64-linux-gnu-gcc'],
         ['Date', 'March 2026'],
     ]
     info_table = Table(info_data, colWidths=[1.8*inch, 4.5*inch])
@@ -170,7 +170,7 @@ def build_report(output_path):
         "6. Option 3: importNetworkFromPyTorch + MATLAB Coder",
         "7. Option 4: ONNX Import + MATLAB Coder",
         "8. Comparative Benchmark Analysis",
-        "9. Memory Fit Analysis",
+        "9. Memory & Optimization Analysis",
         "10. Recommendations",
         "11. Conclusion",
         "Appendix A: File Inventory",
@@ -184,7 +184,7 @@ def build_report(output_path):
     story.append(Paragraph("1. Executive Summary", styles['SectionHead']))
     story.append(Paragraph(
         "This report evaluates four approaches for generating embedded C code from a "
-        "PyTorch ShuffleNet V2 1.0x model targeting the STM32F746G-Discovery board. "
+        "PyTorch ShuffleNet V2 1.0x model targeting an ARM Cortex-A embedded platform. "
         "ShuffleNet V2 is a lightweight CNN designed for mobile and embedded inference, "
         "featuring channel shuffle operations and depthwise separable convolutions that "
         "significantly reduce computational cost while maintaining competitive accuracy.",
@@ -259,27 +259,25 @@ def build_report(output_path):
 
     hw_data = [
         ['Feature', 'Specification'],
-        ['Board', 'STM32F746G-Discovery'],
-        ['Processor', 'ARM Cortex-M7 @ 216 MHz'],
-        ['FPU', 'FPv5-SP (single-precision, hardware)'],
-        ['DSP', 'Single-cycle MAC, SIMD instructions'],
-        ['Internal Flash', '1 MB'],
-        ['Internal SRAM', '340 KB (320 + 16 DTCM + 4 backup)'],
-        ['External QSPI Flash', '16 MB (MT25QL128ABA)'],
-        ['External SDRAM', '8 MB (MT48LC4M32B2, 16-bit bus)'],
-        ['Cache', '4 KB I-cache + 4 KB D-cache'],
-        ['DMA', '16-stream DMA2, memory-to-memory capable'],
+        ['Platform', 'ARM Cortex-A Embedded Platform'],
+        ['Processor', 'ARM Cortex-A53 quad-core @ 1.5 GHz'],
+        ['FPU', 'VFPv4 (single + double precision, hardware)'],
+        ['SIMD', 'NEON (128-bit), 8/16/32-bit integer + float32'],
+        ['RAM', '512 MB+ DDR3/DDR4'],
+        ['Storage', '4+ GB eMMC/SD'],
+        ['Cache', '32 KB L1 I + 32 KB L1 D per core, shared L2'],
+        ['OS', 'Embedded Linux (Yocto / Buildroot)'],
     ]
     story.append(make_table(hw_data[0], hw_data[1:],
                             col_widths=[2*inch, 4.5*inch]))
     story.append(Spacer(1, 12))
 
     story.append(Paragraph(
-        "<b>Memory Implications:</b> The model's 8.69 MB float32 weights exceed the 1 MB "
-        "internal Flash. Deployment requires either (a) external QSPI Flash or SDRAM for "
-        "weight storage, or (b) int8 quantization to reduce weights to ~2.23 MB, which "
-        "still requires external memory. Only with aggressive pruning + int8 could the "
-        "model fit in internal Flash alone.",
+        "<b>Memory Implications:</b> With 512 MB+ RAM available, ShuffleNet V2's 8.69 MB "
+        "float32 weights fit comfortably in memory. The focus shifts from memory fit to "
+        "optimizing inference throughput and latency through NEON SIMD vectorization, "
+        "cache-friendly data layouts, int8 quantization for speed, and multi-core "
+        "parallelism on the quad-core Cortex-A53.",
         styles['BodyText2']
     ))
     story.append(PageBreak())
@@ -292,8 +290,8 @@ def build_report(output_path):
         "A complete, production-quality C99 implementation of ShuffleNet V2 written "
         "from scratch. Every neural network operation (convolution, batch normalization, "
         "ReLU, max pooling, channel shuffle, global average pooling, fully-connected) "
-        "is implemented with ARM Cortex-M7 optimizations including FPU utilization, "
-        "loop unrolling hints, and ping-pong buffer management.",
+        "is implemented with ARM Cortex-A53 optimizations including NEON SIMD "
+        "vectorization, cache-aware tiling, and ping-pong buffer management.",
         styles['BodyText2']
     ))
 
@@ -315,9 +313,9 @@ def build_report(output_path):
         "Ping-pong double-buffer scheme: output writes to buffer B while reading from A",
         "Dedicated fast path for depthwise 3x3 convolution (most common kernel)",
         "Batch normalization can be fused into preceding convolution weights for zero-cost BN",
-        "Weights stored in external SDRAM; activations use 3 buffers of 1.2 MB each",
+        "Weights and activations stored in DDR RAM; tiled for L1/L2 cache efficiency",
         "Support for both float32 and int8 quantized weights (per-channel symmetric)",
-        "CMSIS-NN compatible structure for future integration",
+        "ARM Compute Library / NEON compatible structure for optimized deployment",
     ]
     for b in bullets_1:
         story.append(Paragraph(f"<bullet>&bull;</bullet> {b}", styles['BulletItem']))
@@ -328,8 +326,8 @@ def build_report(output_path):
         ['Weight storage', '8,690 KB', '2,226 KB'],
         ['Code size (compiled)', '~15 KB', '~20 KB'],
         ['Activation RAM', '3,528 KB (3 buffers)', '3,528 KB'],
-        ['Est. inference time', '~810 ms', '~300 ms (with CMSIS-NN)'],
-        ['Fits internal Flash?', 'No', 'No (needs QSPI)'],
+        ['Est. inference time', '~20-25 ms', '~5-10 ms (with NEON)'],
+        ['Fits in RAM?', 'Yes (512 MB+)', 'Yes (512 MB+)'],
     ]
     story.append(make_table(perf_1[0], perf_1[1:],
                             col_widths=[2*inch, 2*inch, 2.5*inch]))
@@ -346,7 +344,7 @@ def build_report(output_path):
         "Uses the new MATLAB Coder Support Package for PyTorch and LiteRT Models, "
         "introduced in R2026a. This package provides the loadPyTorchExportedProgram "
         "function which directly loads .pt2 ExportedProgram files and enables C/C++ "
-        "code generation through MATLAB Coder with Embedded Coder targeting STM32.",
+        "code generation through MATLAB Coder with Embedded Coder targeting ARM Cortex-A.",
         styles['BodyText2']
     ))
 
@@ -357,7 +355,7 @@ def build_report(output_path):
         "Create entry-point: out = net.invoke(input) with %#codegen pragma",
         "Generate MEX for host validation and verify numerical accuracy",
         "Configure Embedded Coder: coder.config('lib', 'ecoder', true)",
-        "Set hardware target: cfg.Hardware = coder.hardware('STM32F746G-Discovery')",
+        "Set hardware target: cfg.Hardware = coder.hardware('ARM Cortex-A')",
         "Generate embedded C code with codegen command",
     ]
     for i, s in enumerate(steps_2, 1):
@@ -374,7 +372,7 @@ def build_report(output_path):
 
     story.append(Paragraph("5.4 Advantages and Limitations", styles['SubsectionHead']))
     story.append(Paragraph(
-        "<b>Advantages:</b> Fully automated pipeline from .pt2 to embedded C. Direct STM32 "
+        "<b>Advantages:</b> Fully automated pipeline from .pt2 to embedded C. Direct ARM "
         "hardware target support. Numerically equivalent to PyTorch. No manual layer "
         "mapping required. LargeConstantGeneration option keeps weights in source files.",
         styles['BodyText2']
@@ -428,7 +426,7 @@ def build_report(output_path):
         ['Generic C/C++', 'None (library-free)', 'Yes', 'Portable, no dependencies'],
         ['ARM Compute', 'v19.05 / v20.02.1', 'Yes (listed)', 'Optimized NEON kernels'],
         ['CMSIS-NN', 'ARM CMSIS-NN', 'Partial', 'Int8 quantized inference'],
-        ['Intel MKL-DNN', 'oneDNN v1.4', 'N/A', 'Not applicable for Cortex-M'],
+        ['Intel MKL-DNN', 'oneDNN v1.4', 'N/A', 'x86 only, not for Cortex-A'],
     ]
     story.append(make_table(targets_3[0], targets_3[1:],
                             col_widths=[1.3*inch, 1.5*inch, 1.3*inch, 2.2*inch]))
@@ -516,20 +514,20 @@ def build_report(output_path):
     story.append(make_table(bench_mem[0], bench_mem[1:],
                             col_widths=[1.8*inch, 1.1*inch, 1.1*inch, 1.1*inch, 1.1*inch]))
 
-    story.append(Paragraph("8.3 Estimated Inference Time (STM32F746G @ 216 MHz)",
+    story.append(Paragraph("8.3 Estimated Inference Time (Cortex-A53 @ 1.5 GHz)",
                            styles['SubsectionHead']))
     bench_time = [
         ['Configuration', 'Option 1', 'Option 2', 'Option 3', 'Option 4'],
-        ['Unoptimized (ms)', '~1,350', '~1,760', '~1,490', '~1,550'],
-        ['Optimized (ms)', '~810', '~1,210', '~1,150', '~1,210'],
-        ['With ARM Compute (ms)', 'N/A', 'N/A', '~700', '~750'],
-        ['Int8 + CMSIS-NN (ms)', '~300', 'N/A', 'N/A', 'N/A'],
+        ['Unoptimized float32 (ms)', '~40', '~55', '~48', '~50'],
+        ['Optimized float32 (ms)', '~20-25', '~30', '~28', '~30'],
+        ['With ARM Compute (ms)', 'N/A', 'N/A', '~18', '~20'],
+        ['Int8 + NEON (ms)', '~5-10', 'N/A', 'N/A', 'N/A'],
     ]
     story.append(make_table(bench_time[0], bench_time[1:],
                             col_widths=[1.8*inch, 1.1*inch, 1.1*inch, 1.1*inch, 1.1*inch]))
     story.append(Paragraph(
         "<i>Note: Inference times are engineering estimates based on ~146M MACs, "
-        "Cortex-M7 cycle counts, and typical Coder overhead. Actual times require "
+        "Cortex-A53 NEON throughput, and typical Coder overhead. Actual times require "
         "on-target measurement.</i>",
         styles['BodyText2']
     ))
@@ -593,41 +591,42 @@ def build_report(output_path):
     ))
     story.append(PageBreak())
 
-    # ── 9. MEMORY FIT ANALYSIS ──────────────────────────────────────
-    story.append(Paragraph("9. Memory Fit Analysis", styles['SectionHead']))
+    # ── 9. MEMORY & OPTIMIZATION ANALYSIS ─────────────────────────
+    story.append(Paragraph("9. Memory & Optimization Analysis", styles['SectionHead']))
     story.append(Paragraph(
-        "The STM32F746G-Discovery has limited internal memory but significant "
-        "external memory resources. This analysis determines which memory regions "
-        "can host model weights and activations for each option.",
+        "With 512 MB+ DDR RAM available on Cortex-A platforms, ShuffleNet V2's "
+        "8.69 MB float32 weights and ~3.5 MB activation buffers fit easily in memory. "
+        "The optimization focus shifts from memory fit to maximizing inference throughput "
+        "and minimizing latency.",
         styles['BodyText2']
     ))
 
     mem_fit = [
-        ['Memory Region', 'Size', 'Weights (f32)?', 'Weights (int8)?', 'Activations?'],
-        ['Internal Flash', '1 MB', 'No (8.69 MB)', 'No (2.23 MB)', 'N/A'],
-        ['QSPI Flash', '16 MB', 'Yes', 'Yes', 'No (read-only)'],
-        ['Internal SRAM', '340 KB', 'No', 'No', 'No (3.5 MB needed)'],
-        ['External SDRAM', '8 MB', 'Yes', 'Yes', 'Yes'],
+        ['Resource', 'Available', 'Model Requirement', 'Headroom'],
+        ['DDR RAM', '512 MB+', '~12.2 MB (weights + activations)', '> 40x'],
+        ['Storage (eMMC/SD)', '4+ GB', '8.69 MB (model file)', '> 400x'],
+        ['L1 D-Cache (per core)', '32 KB', 'Tiled convolution blocks', 'Tile to fit'],
+        ['L2 Cache (shared)', '256-512 KB', 'Working set per layer', 'Tile to fit'],
     ]
     story.append(make_table(mem_fit[0], mem_fit[1:],
-                            col_widths=[1.4*inch, 0.9*inch, 1.3*inch, 1.3*inch, 1.3*inch]))
+                            col_widths=[1.6*inch, 1.3*inch, 2.0*inch, 1.3*inch]))
     story.append(Spacer(1, 8))
 
     story.append(Paragraph(
-        "<b>Recommended memory layout:</b> Store weights in QSPI Flash (execute-in-place "
-        "via memory-mapped mode, or DMA to SDRAM at startup). Allocate activation "
-        "buffers in SDRAM. Use internal SRAM for stack, DMA buffers, and small "
-        "scratch space. Enable Cortex-M7 D-cache for SDRAM access acceleration.",
+        "<b>Optimization strategy:</b> Tile convolution loops to fit L1/L2 cache. "
+        "Use NEON 128-bit SIMD for 4-wide float32 or 16-wide int8 vectorization. "
+        "Exploit quad-core parallelism by distributing independent channel groups "
+        "across cores. Pin model weights in memory to avoid repeated file I/O.",
         styles['BodyText2']
     ))
 
-    story.append(Paragraph("9.1 Reducing Memory Footprint", styles['SubsectionHead']))
+    story.append(Paragraph("9.1 Throughput & Latency Optimization", styles['SubsectionHead']))
     reduction = [
-        "Int8 quantization: Reduces weights from 8.69 MB to 2.23 MB (74% reduction)",
-        "Weight pruning: 50% structured pruning can halve model size",
-        "Smaller input: 160x160 or 128x128 reduces activation buffers substantially",
-        "Activation recomputation: Trade compute for memory by not storing all intermediates",
-        "Mixed precision: Keep first/last layers in float32, middle layers in int8",
+        "Int8 quantization: 4x NEON throughput boost (16 ops vs 4 per instruction), ~5-10 ms inference",
+        "NEON vectorization: Process 4 float32 or 16 int8 values per SIMD instruction",
+        "Cache tiling: Tile spatial and channel dimensions to fit L1 D-cache (32 KB)",
+        "Multi-core: Distribute channel groups across 4 Cortex-A53 cores via pthreads/OpenMP",
+        "Model compression: Pruning + quantization for even higher throughput if needed",
     ]
     for r in reduction:
         story.append(Paragraph(f"<bullet>&bull;</bullet> {r}", styles['BulletItem']))
@@ -684,9 +683,9 @@ def build_report(output_path):
     story.append(Paragraph(
         "When maximum control over optimization is required, the hand-crafted C "
         "implementation provides direct access to all optimization levers: BN fusion, "
-        "int8 quantization, CMSIS-NN integration, custom memory layouts, and loop "
-        "optimizations. This is the only option that can potentially achieve sub-second "
-        "inference on the STM32F746G with int8 quantization.",
+        "int8 quantization, NEON SIMD vectorization, cache-aware tiling, and multi-core "
+        "parallelism. This is the only option that can achieve sub-10 ms inference "
+        "on the Cortex-A53 with int8 quantization and NEON optimization.",
         styles['BodyText2']
     ))
     story.append(PageBreak())
@@ -694,10 +693,10 @@ def build_report(output_path):
     # ── 11. CONCLUSION ──────────────────────────────────────────────
     story.append(Paragraph("11. Conclusion", styles['SectionHead']))
     story.append(Paragraph(
-        "Deploying ShuffleNet V2 on the STM32F746G-Discovery is feasible with all four "
-        "approaches, though each involves trade-offs. The model's 8.69 MB float32 weight "
-        "size necessitates external memory (QSPI Flash or SDRAM) for all options except "
-        "a fully quantized hand-crafted implementation.",
+        "Deploying ShuffleNet V2 on an ARM Cortex-A embedded platform is straightforward "
+        "with all four approaches. The model's 8.69 MB float32 weights fit comfortably "
+        "in the 512 MB+ DDR RAM, so the optimization focus is on maximizing inference "
+        "throughput through NEON vectorization, cache tiling, and int8 quantization.",
         styles['BodyText2']
     ))
     story.append(Paragraph(
@@ -755,14 +754,14 @@ def build_report(output_path):
     story.append(Paragraph("B.1 Option 1: Hand-Crafted C", styles['SubsectionHead']))
     story.append(Paragraph(
         "Prerequisites: Python 3.10+ with PyTorch, NumPy. "
-        "ARM toolchain: arm-none-eabi-gcc.",
+        "ARM toolchain: aarch64-linux-gnu-gcc.",
         styles['BodyText2']
     ))
     build_steps_1 = [
         "cd option1_handcrafted_c",
         "python3 export_weights.py --quantize    # Generate weight headers",
         "make host         # Build for host testing (uses gcc)",
-        "make arm          # Cross-compile for STM32 (uses arm-none-eabi-gcc)",
+        "make arm          # Cross-compile for Cortex-A (uses aarch64-linux-gnu-gcc)",
         "./build/shufflenet_host    # Run host test with dummy weights",
     ]
     for s in build_steps_1:

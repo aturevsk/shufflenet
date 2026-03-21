@@ -22,7 +22,7 @@ function out = mInvoke_shufflenet(input) %#codegen
 %
 %   See also: loadPyTorchExportedProgram, generate_code_pytorch_coder
 
-%   Copyright 2026. Generated for STM32F746G-Discovery deployment.
+%   Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
 
 persistent net;
 if isempty(net)

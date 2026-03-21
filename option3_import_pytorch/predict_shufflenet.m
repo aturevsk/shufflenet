@@ -11,7 +11,7 @@ function out = predict_shufflenet(in) %#codegen
 %
 %   See also: import_and_generate, coder.loadDeepLearningNetwork, dlarray
 
-%   Copyright 2026. Generated for STM32F746G-Discovery deployment.
+%   Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
 
 persistent net;
 if isempty(net)

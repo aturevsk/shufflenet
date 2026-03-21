@@ -1,6 +1,6 @@
 %% Master Script: Run All MATLAB Code Generation Options
 % This script sequentially runs Options 2, 3, and 4 for generating
-% embedded C code from ShuffleNet V2 for STM32F746G-Discovery.
+% embedded C code from ShuffleNet V2 for ARM Cortex-A embedded platform.
 %
 % Prerequisites:
 %   - MATLAB R2026a
@@ -9,7 +9,7 @@
 %   - Deep Learning Toolbox Converter for PyTorch Models
 %   - Deep Learning Toolbox Converter for ONNX Model Format
 %   - MATLAB Coder Support Package for PyTorch and LiteRT Models
-%   - STM32 Hardware Support Package (optional, for on-target deployment)
+%   - ARM cross-compilation toolchain (optional, for on-target deployment)
 %
 % Before running:
 %   1. Ensure shufflenet_exported.pt2 is in this directory

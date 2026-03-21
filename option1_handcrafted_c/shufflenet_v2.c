@@ -2,7 +2,7 @@
  * @file shufflenet_v2.c
  * @brief ShuffleNet V2 1.0x — Complete C implementation
  *
- * Target: STM32F746G-Discovery (ARM Cortex-M7 @ 216 MHz)
+ * Target: ARM Cortex-A embedded platforms (e.g., RPi 4, i.MX 8M)
  * Layout: CHW (channels-first), float32
  *
  * This file implements every neural network operation required for

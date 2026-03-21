@@ -1,6 +1,6 @@
-# ShuffleNet V2 — Embedded C Code Generation for STM32F746G-Discovery
+# ShuffleNet V2 — Embedded C Code Generation for ARM Cortex-A Platforms
 
-Comparison of **4 approaches** for generating embedded C code from a PyTorch ShuffleNet V2 1.0x classification model, targeting the **STM32F746G-Discovery** (ARM Cortex-M7 @ 216 MHz).
+Comparison of **4 approaches** for generating embedded C code from a PyTorch ShuffleNet V2 1.0x classification model, targeting **ARM Cortex-A embedded platforms** (e.g., Raspberry Pi 4, NXP i.MX 8M, Qualcomm RB3).
 
 ## [Interactive Results Explorer](https://aturevsk.github.io/shufflenet/)
 
@@ -48,7 +48,7 @@ webapp/                    Interactive results explorer
 
 - MATLAB R2026a (with Deep Learning Toolbox, MATLAB Coder, Embedded Coder)
 - Python 3.10+ with PyTorch, torchvision, numpy
-- ARM toolchain (for Option 1 cross-compilation)
+- ARM cross-compilation toolchain (e.g., `aarch64-linux-gnu-gcc` for Option 1)
 
 ## Quick Start
 

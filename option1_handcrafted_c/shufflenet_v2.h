@@ -1,24 +1,24 @@
 /**
  * @file shufflenet_v2.h
- * @brief ShuffleNet V2 1.0x — Public API for STM32F746G-Discovery
+ * @brief ShuffleNet V2 1.0x — Public API for ARM Cortex-A Embedded Platforms
  *
  * Architecture: ShuffleNet V2 with 1.0x width multiplier
  *   Input  : 1 x 3 x 224 x 224  (CHW, float32)
  *   Output : 1000-class softmax logits
  *
  * Target hardware:
- *   MCU    : STM32F746G  (ARM Cortex-M7, 216 MHz)
- *   Flash  : 1 MB internal
- *   SRAM   : 320 KB + 16 KB DTCM + 4 KB backup = 340 KB
- *   SDRAM  : 8 MB external (MT48LC4M32B2, 16-bit bus)
+ *   CPU    : ARM Cortex-A53/A72 @ 1.5 GHz (e.g., RPi 4, i.MX 8M)
+ *   RAM    : 512 MB+ DDR
+ *   SIMD   : NEON 128-bit
+ *   OS     : Embedded Linux
  *
  * Data layout: CHW (channels-first) throughout, matching PyTorch conventions.
  * Precision : float32 primary; int8 hooks marked with SN2_QUANT_HOOKS.
  *
  * Memory strategy:
- *   - Weights are stored in external SDRAM (const, ~5.3 MB float32).
- *   - Activations use a ping-pong double-buffer scheme in SDRAM.
- *   - Small scratch buffers for depthwise convolution rows in SRAM.
+ *   - Weights stored as const arrays (~8.7 MB float32, ~2.2 MB int8).
+ *   - Activations use a ping-pong double-buffer scheme.
+ *   - Optimized for L1/L2 cache locality and NEON vectorization.
  *
  * Copyright (c) 2026 — MIT License
  */

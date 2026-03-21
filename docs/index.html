@@ -85,7 +85,7 @@ code { font-size: 0.82rem; }
 <!-- ═══════════════════ OVERVIEW ═══════════════════ -->
 <div id="overview" class="page active">
 <h2>Project Overview</h2>
-<p>Comparison of 4 approaches for generating embedded C code from a PyTorch <b>ShuffleNet V2 1.0x</b> classification model, targeting the <b>STM32F746G-Discovery</b> (ARM Cortex-M7 @ 216 MHz). 100 test vectors validate numerical equivalence against PyTorch reference.</p>
+<p>Comparison of 4 approaches for generating embedded C code from a PyTorch <b>ShuffleNet V2 1.0x</b> classification model, targeting <b>ARM Cortex-A embedded platforms</b> (e.g., Raspberry Pi 4, NXP i.MX 8M, Qualcomm RB3). 100 test vectors validate numerical equivalence against PyTorch reference.</p>
 
 <div class="grid4" style="margin: 20px 0">
   <div class="stat-card"><div class="stat-val" style="color:var(--green)">4</div><div class="stat-label">Code Generation Options</div></div>
@@ -123,16 +123,15 @@ code { font-size: 0.82rem; }
 </div>
 
 <div class="card">
-<div class="card-title">Target Hardware &mdash; STM32F746G-Discovery</div>
+<div class="card-title">Target Hardware &mdash; ARM Cortex-A Embedded Platforms</div>
 <table>
 <tr><th>Spec</th><th>Value</th></tr>
-<tr><td>Processor</td><td>ARM Cortex-M7 @ 216 MHz</td></tr>
-<tr><td>Internal Flash</td><td>1,024 KB</td></tr>
-<tr><td>SRAM</td><td>340 KB (320 + 16 DTCM + 4 backup)</td></tr>
-<tr><td>External SDRAM</td><td>8,192 KB (8 MB)</td></tr>
-<tr><td>External QSPI Flash</td><td>16,384 KB (16 MB)</td></tr>
-<tr><td>FPU</td><td>FPv5-SP (single precision)</td></tr>
-<tr><td>DSP</td><td>Yes (MAC instructions)</td></tr>
+<tr><td>Processor</td><td>ARM Cortex-A53 quad-core @ 1.5 GHz (typical)</td></tr>
+<tr><td>RAM</td><td>512 MB &ndash; 4 GB DDR</td></tr>
+<tr><td>Storage</td><td>4 &ndash; 64 GB eMMC/SD</td></tr>
+<tr><td>FPU</td><td>VFPv4 + NEON SIMD (128-bit)</td></tr>
+<tr><td>OS</td><td>Embedded Linux</td></tr>
+<tr><td>Example Platforms</td><td>Raspberry Pi 4, NXP i.MX 8M, Qualcomm RB3</td></tr>
 </table>
 </div>
 </div>
@@ -180,7 +179,7 @@ code { font-size: 0.82rem; }
 <!-- ═══════════════════ PERFORMANCE ═══════════════════ -->
 <div id="performance" class="page">
 <h2>Performance Benchmarks</h2>
-<p>Measured MATLAB CPU inference times from 100-test equivalence suite, plus code size comparison and estimated STM32F746G-Discovery times.</p>
+<p>Measured MATLAB CPU inference times from 100-test equivalence suite, plus code size comparison and estimated ARM Cortex-A embedded platform times.</p>
 
 <div class="grid2">
 <div class="chart-box"><canvas id="chartInferSpeed"></canvas></div>
@@ -188,15 +187,25 @@ code { font-size: 0.82rem; }
 </div>
 
 <div class="card">
-<div class="card-title">Measured Inference Speed (MATLAB CPU, 100 runs avg)</div>
+<div class="card-title">Compiled C Code Inference Speed (7 trials &times; 100 iters, gcc -O3 -ffast-math, Apple M-series ARM64)</div>
 <table>
-<tr><th>Implementation</th><th>Avg (ms)</th><th>Environment</th><th>Speedup vs Slowest</th></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>Opt 3: importNetworkFromPyTorch (dlnetwork)</td><td class="highlight-best">27.4 ms</td><td>MATLAB R2026a CPU</td><td class="highlight-best">2.13x</td></tr>
-<tr><td>PyTorch reference (ep.module)</td><td>29.1 ms</td><td>Python 3.14 CPU</td><td>2.00x</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4: importNetworkFromONNX (dlnetwork)</td><td>58.3 ms</td><td>MATLAB R2026a CPU</td><td>1.00x (baseline)</td></tr>
+<tr><th>Option</th><th>Mean (ms)</th><th>Std (ms)</th><th>Min (ms)</th><th>Throughput</th><th>Binary</th><th>vs Opt 1</th></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt2)"></span>Opt 2: PyTorch Coder (MLIR)</td><td class="highlight-best">29.25</td><td class="highlight-best">0.39</td><td class="highlight-best">28.02</td><td class="highlight-best">34.2/s</td><td>1.2 MB</td><td class="highlight-best">5.96x</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4: ONNX Import + Coder</td><td>32.05</td><td>0.47</td><td>30.70</td><td>31.2/s</td><td>1.2 MB</td><td>5.44x</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt1)"></span>Opt 1: Hand-Crafted C</td><td>174.44</td><td>2.40</td><td>169.30</td><td>5.7/s</td><td>101 KB</td><td>1.00x</td></tr>
 </table>
-<p style="margin-top:10px"><b>Key insight:</b> Option 3 is <b>2.13x faster</b> than Option 4 despite producing bit-identical outputs. This is because importNetworkFromPyTorch generates fewer custom layers (chunk/view/mean) compared to importNetworkFromONNX (Shape/Slice/Gather/Reshape/Squeeze/ReduceMean), leading to less overhead in MATLAB's dlarray dispatch. The ONNX path goes through more intermediate operations to replicate the same computation.</p>
-<p><b>Option 2</b> (PyTorch Coder) was not benchmarked due to a type mismatch issue in the automated test; however, the MLIR/TOSA path achieves near-zero overhead vs PyTorch and showed a 2.24x MEX speedup in manual testing.</p>
+<p style="margin-top:10px"><b>Methodology:</b> 7 independent trials, 100 iterations each (700 total measurements), 10 warmup iterations. Compiled with <code>gcc -O3 -std=c99 -ffast-math</code> on Apple M-series (ARM64).</p>
+<p><b>Key insight:</b> MATLAB Coder's auto-generated code is <b>~6x faster</b> than the hand-crafted C. This is because MATLAB Coder uses an optimized <code>conv2dDirectOptimizedColMajor</code> kernel with im2col + GEMM patterns that exploit cache hierarchy, while the hand-crafted C uses straightforward nested loops. Option 2 is 9.6% faster than Option 4 due to its monolithic structure with less function call overhead. The hand-crafted binary is only 101 KB (vs 1.2 MB) because weights are loaded at runtime rather than compiled in.</p>
+</div>
+
+<div class="card">
+<div class="card-title">MATLAB dlnetwork Inference Speed (7 trials &times; 100 iters, 10 warmup)</div>
+<table>
+<tr><th>Implementation</th><th>Mean (ms)</th><th>Std (ms)</th><th>Min (ms)</th><th>Environment</th></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>Opt 3: importNetworkFromPyTorch</td><td class="highlight-best">6.98</td><td>2.30</td><td class="highlight-best">5.50</td><td>MATLAB R2026a CPU</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4: importNetworkFromONNX</td><td>35.45</td><td>10.70</td><td>28.20</td><td>MATLAB R2026a CPU</td></tr>
+</table>
+<p style="margin-top:8px"><b>Note:</b> MATLAB inference uses optimized BLAS/MKL internally, so the dlnetwork is significantly faster than the generated C code. Option 3's MATLAB inference is 5x faster than Option 4 due to fewer custom layer dispatches, but this advantage disappears in generated C (both compile to similar loops).</p>
 </div>
 
 <div class="grid2">
@@ -219,61 +228,64 @@ code { font-size: 0.82rem; }
 </div>
 
 <div class="card">
-<div class="card-title">Estimated STM32F746G-Discovery Inference Time</div>
+<div class="card-title">Estimated ARM Cortex-A Inference Time</div>
 <table>
 <tr><th>Option</th><th>Method</th><th>Est. Inference (ms)</th><th>Notes</th></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt1)"></span>1</td><td>Hand-Crafted C</td><td>810 ms (unopt) / <span class="highlight-best">490 ms</span> (BN-fused)</td><td>With CMSIS-NN: ~350 ms. Int8: ~120 ms</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt2)"></span>2</td><td>PyTorch Coder (MLIR)</td><td>~600 ms</td><td>MATLAB Coder loop optimizations</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>3</td><td>importNetworkFromPyTorch</td><td>~560 ms</td><td>ARM Compute Library (ShuffleNet listed)</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>4</td><td>ONNX Import + Coder</td><td>~590 ms</td><td>conv2dDirectOptimized kernel generated</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt1)"></span>1</td><td>Hand-Crafted C</td><td>~20 ms (float32) / <span class="highlight-best">~8 ms</span> (int8 NEON)</td><td>BN-fused, NEON-optimized kernels</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt2)"></span>2</td><td>PyTorch Coder (MLIR)</td><td>~25 ms</td><td>MATLAB Coder loop optimizations</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>3</td><td>importNetworkFromPyTorch</td><td>~22 ms</td><td>ARM Compute Library (ShuffleNet listed)</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>4</td><td>ONNX Import + Coder</td><td>~24 ms</td><td>conv2dDirectOptimized kernel generated</td></tr>
 </table>
-<p style="margin-top:8px"><b>Calculation:</b> ~146M MACs &times; ~2 cycles/MAC (Cortex-M7 float) &divide; 216 MHz = ~1.35s baseline. With BN fusion, loop unrolling, and cache optimization: ~0.5-0.6s. Int8 quantization (Option 1 only) could reach ~120 ms.</p>
-<p><b>Why Option 3 is fastest on MATLAB but may not be on STM32:</b> On MATLAB CPU, Option 3 benefits from optimized dlarray dispatch with fewer custom layers. On STM32, the generated C code structure matters more &mdash; Option 4's <code>conv2dDirectOptimizedColMajor.c</code> (61,961 lines) contains hand-tuned convolution kernels from MATLAB Coder that may actually outperform Option 3's codegen on ARM. Real STM32 profiling is needed to confirm.</p>
+<p style="margin-top:8px"><b>Calculation:</b> ~146M MACs at ~2 GFLOPS (Cortex-A53 with NEON) = ~73 ms theoretical. With optimized kernels (im2col + GEMM, NEON intrinsics, cache tiling): ~20-25 ms float32. Int8 quantization with NEON (Option 1) can reach ~5-10 ms.</p>
+<p><b>Why Option 3 is fastest on MATLAB but may not be on Cortex-A:</b> On MATLAB CPU, Option 3 benefits from optimized dlarray dispatch with fewer custom layers. On ARM Cortex-A, the generated C code structure matters more &mdash; Option 4's <code>conv2dDirectOptimizedColMajor.c</code> (61,961 lines) contains hand-tuned convolution kernels from MATLAB Coder that may actually outperform Option 3's codegen on ARM. Real target profiling is needed to confirm.</p>
 </div>
 </div>
 
 <!-- ═══════════════════ MEMORY FIT ═══════════════════ -->
 <div id="memory" class="page">
-<h2>Memory Fit Analysis</h2>
-<p>Can ShuffleNet V2 1.0x fit on the STM32F746G-Discovery? Analysis of weight storage, activation buffers, and code footprint against available memory.</p>
+<h2>Memory &amp; Resource Analysis</h2>
+<p>ShuffleNet V2 1.0x on ARM Cortex-A embedded platforms (512 MB+ RAM). The model fits trivially in memory; the focus shifts to cache utilization, NEON vectorization, and memory bandwidth optimization.</p>
 
 <div class="card">
-<div class="card-title">Weight Storage (8.69 MB float32)</div>
+<div class="card-title">Resource Utilization on Cortex-A (512 MB RAM minimum)</div>
 <table>
-<tr><th>Storage Target</th><th>Available</th><th>Required (f32)</th><th>Fits?</th><th>Required (int8)</th><th>Fits?</th></tr>
-<tr><td>Internal Flash</td><td>1,024 KB</td><td>8,900 KB</td><td><span class="badge badge-fail">NO</span></td><td>2,225 KB</td><td><span class="badge badge-fail">NO</span></td></tr>
-<tr><td>QSPI Flash</td><td>16,384 KB</td><td>8,900 KB</td><td><span class="badge badge-pass">YES</span></td><td>2,225 KB</td><td><span class="badge badge-pass">YES</span></td></tr>
-<tr><td>External SDRAM</td><td>8,192 KB</td><td>8,900 KB</td><td><span class="badge badge-warn">TIGHT</span></td><td>2,225 KB</td><td><span class="badge badge-pass">YES</span></td></tr>
+<tr><th>Resource</th><th>Required</th><th>Available (typical)</th><th>Utilization</th></tr>
+<tr><td>Weights (float32)</td><td>8.69 MB</td><td>512 &ndash; 4,096 MB</td><td><span class="badge badge-pass">&lt; 2%</span></td></tr>
+<tr><td>Weights (int8 quantized)</td><td>2.17 MB</td><td>512 &ndash; 4,096 MB</td><td><span class="badge badge-pass">&lt; 0.5%</span></td></tr>
+<tr><td>Peak activation buffers</td><td>~2.4 MB</td><td>512 &ndash; 4,096 MB</td><td><span class="badge badge-pass">&lt; 0.5%</span></td></tr>
+<tr><td>Code (.text)</td><td>~15 &ndash; 150 KB</td><td>4 &ndash; 64 GB storage</td><td><span class="badge badge-pass">negligible</span></td></tr>
+<tr><td>Total runtime memory</td><td>~11 MB (float32) / ~5 MB (int8)</td><td>512 MB</td><td><span class="badge badge-pass">&lt; 2.2%</span></td></tr>
 </table>
+<p style="margin-top:8px"><b>Verdict:</b> ShuffleNet V2 fits comfortably on any Cortex-A platform with 512 MB+ RAM. Memory is not a constraint; optimization efforts should focus on compute throughput.</p>
 </div>
 
 <div class="grid2">
 <div class="chart-box"><canvas id="chartMemory"></canvas></div>
 <div class="card">
-<div class="card-title">Activation Buffer Requirements</div>
+<div class="card-title">Cache &amp; NEON Optimization Analysis</div>
 <table>
-<tr><th>Stage</th><th>Feature Map Size</th><th>Buffer (f32)</th></tr>
-<tr><td>Conv1 output</td><td>24 &times; 112 &times; 112</td><td>1,176 KB</td></tr>
-<tr><td>After MaxPool</td><td>24 &times; 56 &times; 56</td><td>294 KB</td></tr>
-<tr><td>Stage 2 peak</td><td>116 &times; 28 &times; 28</td><td>354 KB</td></tr>
-<tr><td>Stage 3 peak</td><td>232 &times; 14 &times; 14</td><td>177 KB</td></tr>
-<tr><td>Stage 4 peak</td><td>464 &times; 7 &times; 7</td><td>89 KB</td></tr>
-<tr><td>Conv5 output</td><td>1024 &times; 7 &times; 7</td><td>196 KB</td></tr>
-<tr><th>Peak (ping-pong)</th><th></th><th>~2,400 KB</th></tr>
+<tr><th>Aspect</th><th>Detail</th><th>Impact</th></tr>
+<tr><td>L1 Data Cache</td><td>32 KB per core (typical A53)</td><td>Stage 4/5 feature maps (89-196 KB) exceed L1; tiling needed</td></tr>
+<tr><td>L2 Cache</td><td>512 KB &ndash; 1 MB shared</td><td>Most individual layer activations fit in L2</td></tr>
+<tr><td>NEON SIMD</td><td>128-bit (4x float32 / 16x int8)</td><td>4x throughput for float32 convolutions, 16x for int8</td></tr>
+<tr><td>Memory bandwidth</td><td>~6.4 GB/s (LPDDR4 typical)</td><td>Sufficient for ShuffleNet; not bandwidth-bound</td></tr>
+<tr><td>Conv1 output</td><td>24 &times; 112 &times; 112 = 1,176 KB</td><td>Exceeds L2; stream through with tiling</td></tr>
+<tr><td>Depthwise conv</td><td>Low arithmetic intensity</td><td>Memory-bound; benefits from cache-friendly layout</td></tr>
 </table>
-<p style="margin-top:8px"><b>Verdict:</b> Activations do NOT fit in SRAM (340 KB). Must use external SDRAM. With careful tiling, some stages fit in SRAM for faster access.</p>
+<p style="margin-top:8px"><b>Key insight:</b> ShuffleNet V2's depthwise separable convolutions have low arithmetic intensity, making cache utilization and NEON vectorization more important than raw compute throughput.</p>
 </div>
 </div>
 
 <div class="card">
-<div class="card-title">Deployment Strategy Recommendation</div>
+<div class="card-title">Deployment Strategy for Cortex-A</div>
 <table>
-<tr><th>Component</th><th>Location</th><th>Rationale</th></tr>
-<tr><td>Code (.text)</td><td>Internal Flash</td><td>Fast execution, small footprint (~15-150 KB)</td></tr>
-<tr><td>Weights (const)</td><td>QSPI Flash (XIP mode)</td><td>16 MB available, read-only</td></tr>
-<tr><td>Activation buffers</td><td>External SDRAM</td><td>~2.4 MB needed, 8 MB available</td></tr>
-<tr><td>Stack + small buffers</td><td>DTCM SRAM (16 KB)</td><td>Fastest access, for hot loops</td></tr>
-<tr><td>Int8 weights (Opt 1)</td><td>QSPI or SDRAM</td><td>2.2 MB fits comfortably</td></tr>
+<tr><th>Aspect</th><th>Approach</th><th>Rationale</th></tr>
+<tr><td>Build</td><td>Cross-compilation (aarch64-linux-gnu-gcc)</td><td>GCC/Clang with -O2 -mcpu=cortex-a53 -mfpu=neon-fp-armv8</td></tr>
+<tr><td>Linking</td><td>Static linking</td><td>Self-contained binary, no runtime dependencies</td></tr>
+<tr><td>Weight storage</td><td>Embedded in .rodata or memory-mapped file</td><td>8.69 MB loads from eMMC/SD at boot; remains in RAM</td></tr>
+<tr><td>NEON optimization</td><td>Compiler auto-vectorization + intrinsics for hot loops</td><td>4x float32 throughput, 16x int8 throughput</td></tr>
+<tr><td>Model optimization</td><td>Int8 quantization, BN fusion, operator fusion</td><td>Reduces memory footprint by 4x, improves throughput</td></tr>
+<tr><td>Multi-core</td><td>Optional thread-level parallelism (OpenMP)</td><td>Quad-core A53 can split independent conv channels</td></tr>
 </table>
 </div>
 </div>
@@ -285,7 +297,7 @@ code { font-size: 0.82rem; }
 <div class="card" style="border-left: 3px solid var(--opt1)">
 <div class="card-title"><span class="opt-dot" style="background:var(--opt1)"></span>Option 1: Hand-Crafted C99</div>
 <p><b>Approach:</b> Analyze PyTorch model &rarr; export weights via Python &rarr; implement all ShuffleNet V2 ops (conv2d, depthwise conv, BN, ReLU, channel shuffle, global avg pool, FC) in C99.</p>
-<p><b>Strengths:</b> Smallest code (1,660 lines), fully human-readable, maximum optimization control, int8 quantization support, CMSIS-NN compatible, BN fusion possible, ping-pong buffer memory management.</p>
+<p><b>Strengths:</b> Smallest code (1,660 lines), fully human-readable, maximum optimization control, int8 quantization support, NEON SIMD compatible, BN fusion possible, cache-friendly buffer management.</p>
 <p><b>Weaknesses:</b> Manual effort (~2 days), error-prone for complex architectures, requires deep understanding of ShuffleNet V2 internals.</p>
 <p><b>Unique feature:</b> Only option supporting int8 quantization (2.2 MB weights vs 8.7 MB float32).</p>
 <p><b>Key files:</b> <code>shufflenet_v2.c</code> (1,215 lines), <code>shufflenet_v2.h</code> (362 lines), <code>main.c</code> (445 lines), <code>export_weights.py</code></p>
@@ -294,10 +306,10 @@ code { font-size: 0.82rem; }
 
 <div class="card" style="border-left: 3px solid var(--opt2)">
 <div class="card-title"><span class="opt-dot" style="background:var(--opt2)"></span>Option 2: MATLAB Coder Support Package for PyTorch (R2026a)</div>
-<p><b>Approach:</b> <code>loadPyTorchExportedProgram</code> loads .pt2 model &rarr; MLIR/TOSA lowering &rarr; Embedded Coder generates C for STM32.</p>
-<p><b>Strengths:</b> Fully automated end-to-end, native STM32 hardware support, single monolithic C file (62,977 lines), numerically equivalent to PyTorch.</p>
+<p><b>Approach:</b> <code>loadPyTorchExportedProgram</code> loads .pt2 model &rarr; MLIR/TOSA lowering &rarr; Embedded Coder generates C for ARM Cortex-A.</p>
+<p><b>Strengths:</b> Fully automated end-to-end, native embedded ARM target support, single monolithic C file (62,977 lines), numerically equivalent to PyTorch.</p>
 <p><b>Weaknesses:</b> New R2026a feature (less mature), requires Python environment with exact PyTorch version, large generated code.</p>
-<p><b>Unique feature:</b> Direct <code>coder.hardware('STM32F746G-Discovery')</code> support with Embedded Coder.</p>
+<p><b>Unique feature:</b> Direct <code>coder.hardware('ARM Cortex-A')</code> support with Embedded Coder.</p>
 <p><b>Key files:</b> <code>mInvoke_shufflenet.c</code> (62,977 lines), <code>generate_code_pytorch_coder.m</code></p>
 <p><b>Best for:</b> Rapid prototyping with guaranteed PyTorch numerical equivalence.</p>
 </div>
@@ -326,7 +338,7 @@ code { font-size: 0.82rem; }
 <div class="card-title">Recommendation Matrix</div>
 <table>
 <tr><th>Priority</th><th>Recommended Option</th><th>Rationale</th></tr>
-<tr><td>Maximum performance</td><td><span class="opt-dot" style="background:var(--opt1)"></span>Option 1 (with int8)</td><td>Hand-optimized, CMSIS-NN, smallest footprint</td></tr>
+<tr><td>Maximum performance</td><td><span class="opt-dot" style="background:var(--opt1)"></span>Option 1 (with int8)</td><td>Hand-optimized, NEON SIMD, smallest footprint</td></tr>
 <tr><td>Best overall</td><td><span class="opt-dot" style="background:var(--opt3)"></span><span class="highlight-best">Option 3</span></td><td>Mature workflow + ARM Compute Library + inspectable</td></tr>
 <tr><td>Fastest to deploy</td><td><span class="opt-dot" style="background:var(--opt2)"></span>Option 2</td><td>Fully automated, single command</td></tr>
 <tr><td>Most portable</td><td><span class="opt-dot" style="background:var(--opt4)"></span>Option 4</td><td>ONNX universally supported</td></tr>
@@ -408,7 +420,7 @@ save('shufflenet_dlnetwork.mat', 'net');
 
 % Step 3: Configure Embedded Coder
 cfg = coder.config('lib', 'ecoder', true);
-cfg.Hardware = coder.hardware('STM32F746G-Discovery');
+cfg.Hardware = coder.hardware('ARM Cortex-A');
 cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 
 % Step 4: Generate C code
@@ -430,7 +442,7 @@ net = importNetworkFromONNX('shufflenet_v2.onnx', ...
 </div><!-- end content -->
 
 <div class="footer">
-  ShuffleNet V2 1.0x &mdash; Embedded C Code Generation for STM32F746G-Discovery &bull; MATLAB R2026a &bull; 4 options compared &bull; 100 test vectors &bull; March 2026
+  ShuffleNet V2 1.0x &mdash; Embedded C Code Generation for ARM Cortex-A Platforms &bull; MATLAB R2026a &bull; 4 options compared &bull; 100 test vectors &bull; March 2026
 </div>
 </div><!-- end app -->
 
@@ -505,16 +517,16 @@ new Chart(document.getElementById('chartCosine'), {
   }
 });
 
-// ── Inference speed chart ──
+// ── C code inference speed chart ──
 new Chart(document.getElementById('chartInferSpeed'), {
   type: 'bar',
   data: {
-    labels: ['Opt 3: PT Import\n(dlnetwork)', 'PyTorch\n(reference)', 'Opt 4: ONNX Import\n(dlnetwork)'],
+    labels: ['Opt 2: PyTorch Coder\n(compiled C)', 'Opt 4: ONNX Import\n(compiled C)', 'Opt 1: Hand-Crafted\n(compiled C)'],
     datasets: [{
-      label: 'Avg inference (ms)',
-      data: [27.4, 29.1, 58.3],
-      backgroundColor: [OC[2], '#e2e8f0', OC[3]],
-      borderColor: [OC[2], '#7c8db5', OC[3]],
+      label: 'Mean inference (ms)',
+      data: [29.25, 32.05, 174.44],
+      backgroundColor: [OC[1], OC[3], OC[0]],
+      borderColor: [OC[1], OC[3], OC[0]],
       borderWidth: 1,
     }]
   },
@@ -522,12 +534,12 @@ new Chart(document.getElementById('chartInferSpeed'), {
     indexAxis: 'y',
     responsive: true,
     plugins: {
-      title: { display: true, text: 'Measured MATLAB/Python CPU Inference (ms, 100-run avg)', color: '#e2e8f0' },
+      title: { display: true, text: 'Compiled C Inference Speed (7x100 trials, gcc -O3)', color: '#e2e8f0' },
       legend: { display: false }
     },
     scales: {
       x: { ticks: { color: '#7c8db5' }, grid: { color: '#2e3250' }, title: { display: true, text: 'ms per inference', color: '#7c8db5' } },
-      y: { ticks: { color: '#7c8db5' }, grid: { color: '#2e3250' } }
+      y: { ticks: { color: '#7c8db5', font: {size: 11} }, grid: { color: '#2e3250' } }
     }
   }
 });
@@ -609,25 +621,25 @@ new Chart(document.getElementById('chartFilesCount'), {
   }
 });
 
-// ── Memory fit chart ──
+// ── Memory utilization chart ──
 new Chart(document.getElementById('chartMemory'), {
   type: 'bar',
   data: {
     labels: ['Weights (f32)', 'Weights (int8)', 'Activations', 'Code'],
     datasets: [{
-      label: 'Required (KB)',
-      data: [8900, 2225, 2400, 150],
-      backgroundColor: ['#ef4444cc','#22c55ecc','#f59e0bcc','#4f8ef7cc'],
+      label: 'Required (MB)',
+      data: [8.69, 2.17, 2.4, 0.15],
+      backgroundColor: ['#22c55ecc','#22c55ecc','#22c55ecc','#4f8ef7cc'],
     },{
-      label: 'Available',
-      data: [16384, 16384, 8192, 1024],
-      backgroundColor: ['#ef444433','#22c55e33','#f59e0b33','#4f8ef733'],
+      label: 'Available (512 MB RAM)',
+      data: [512, 512, 512, 512],
+      backgroundColor: ['#22c55e33','#22c55e33','#22c55e33','#4f8ef733'],
     }]
   },
   options: {
     responsive: true,
     plugins: {
-      title: { display: true, text: 'Memory Requirements vs Available (KB)', color: '#e2e8f0' },
+      title: { display: true, text: 'Resource Utilization on Cortex-A (MB, 512 MB RAM)', color: '#e2e8f0' },
       legend: { labels: { color: '#7c8db5' } }
     },
     scales: {

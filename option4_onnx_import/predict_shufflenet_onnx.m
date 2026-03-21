@@ -10,7 +10,7 @@ function out = predict_shufflenet_onnx(in) %#codegen
 %   Outputs:
 %       out - Network output class scores [1 x 1000]
 
-%   Copyright 2026. Generated for STM32F746G-Discovery deployment.
+%   Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
 
 persistent net;
 if isempty(net)

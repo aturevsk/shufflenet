@@ -1,7 +1,7 @@
 %% Generate C Code from ShuffleNet V2 Using PyTorch Coder Support Package
 % This script demonstrates the complete workflow for generating embedded C
 % code from a PyTorch-exported ShuffleNet V2 model targeting the
-% STM32F746G-Discovery board (ARM Cortex-M7).
+% ARM Cortex-A embedded platform board (ARM Cortex-A53).
 %
 % Workflow:
 %   1. Load the exported PyTorch model (.pt2 format)
@@ -9,7 +9,7 @@
 %   3. Run test inference in MATLAB
 %   4. Generate MEX for host-based validation
 %   5. Validate MEX output against MATLAB reference
-%   6. Configure Embedded Coder for STM32F746G-Discovery
+%   6. Configure Embedded Coder for ARM Cortex-A embedded platform
 %   7. Generate embedded C code
 %   8. Report code generation metrics
 %
@@ -19,17 +19,17 @@
 %   - MATLAB Coder
 %   - Embedded Coder
 %   - PyTorch Coder Support Package for MATLAB Coder
-%   - STM32 Hardware Support Package (for on-target deployment)
+%   - ARM cross-compilation toolchain (for on-target deployment)
 %
 % Model file: ../shufflenet_exported.pt2 (relative to this script)
 
-%   Copyright 2026. Generated for STM32F746G-Discovery deployment.
+%   Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
 
 %% Setup
 clear; clc; close all;
 fprintf('=============================================================\n');
 fprintf(' ShuffleNet V2 Code Generation via PyTorch Coder\n');
-fprintf(' Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+fprintf(' Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
 fprintf('=============================================================\n\n');
 
 % Resolve model path relative to this script's location
@@ -188,25 +188,25 @@ catch ME
     fprintf('  Continuing with embedded code generation...\n');
 end
 
-%% Step 6: Configure Embedded Coder for STM32F746G-Discovery
+%% Step 6: Configure Embedded Coder for ARM Cortex-A embedded platform
 fprintf('\n--- Step 6: Embedded Coder Configuration ---\n');
 try
     % Create Embedded Coder configuration for static library
     cfg = coder.config('lib', 'ecoder', true);
 
     % Target hardware: configure for ARM Cortex-M (generic)
-    % Note: Use coder.hardware('STM32F746G-Discovery') if the
-    % STM32 Hardware Support Package is installed.
+    % Note: Use coder.hardware('ARM Cortex-A embedded platform') if the
+    % ARM cross-compilation toolchain is installed.
     try
-        cfg.Hardware = coder.hardware('STM32F746G-Discovery');
-        fprintf('Target hardware: STM32F746G-Discovery\n');
+        cfg.Hardware = coder.hardware('ARM Cortex-A embedded platform');
+        fprintf('Target hardware: ARM Cortex-A embedded platform\n');
     catch
-        fprintf('STM32 support package not installed.\n');
+        fprintf('ARM Cortex-A support package not installed.\n');
         fprintf('Using generic ARM Cortex-M configuration.\n');
         % Configure for generic embedded ARM target
         cfg.GenCodeOnly = true;
     end
-    fprintf('  Target: ARM Cortex-M7 (STM32F746G-Discovery)\n');
+    fprintf('  Target: ARM Cortex-A53 (ARM Cortex-A embedded platform)\n');
     fprintf('  Flash: 1 MB + 16 MB QSPI\n');
     fprintf('  RAM: 340 KB SRAM + 8 MB SDRAM\n');
 
@@ -218,7 +218,7 @@ try
     % Memory optimization settings
     cfg.EnableMemcpy = true;
     cfg.MemcpyThreshold = 64;
-    cfg.EnableOpenMP = false; % Single-core Cortex-M7
+    cfg.EnableOpenMP = false; % Single-core Cortex-A53
     cfg.SupportNonFinite = false; % Save code size
 
     % Optimization settings for embedded
@@ -241,7 +241,7 @@ end
 
 %% Step 7: Generate Embedded C Code
 fprintf('\n--- Step 7: Embedded C Code Generation ---\n');
-embeddedOutputDir = fullfile(outputDir, 'embedded_stm32');
+embeddedOutputDir = fullfile(outputDir, 'embedded_arm_cortex_a');
 if ~isfolder(embeddedOutputDir)
     mkdir(embeddedOutputDir);
 end
@@ -252,7 +252,7 @@ try
     % Define input types (same as MEX generation)
     inputArg = coder.typeof(single(0), inputSize, [false, false, false, false]);
 
-    fprintf('Generating embedded C code for STM32F746G-Discovery...\n');
+    fprintf('Generating embedded C code for ARM Cortex-A embedded platform...\n');
     fprintf('  This may take several minutes for a full DNN model.\n');
 
     codegen -config cfg ...
@@ -270,7 +270,7 @@ catch ME
     fprintf(2, '\nCommon issues:\n');
     fprintf(2, '  - Unsupported layers for code generation\n');
     fprintf(2, '  - Missing Embedded Coder license\n');
-    fprintf(2, '  - STM32 hardware support package not installed\n');
+    fprintf(2, '  - ARM Cortex-A hardware support package not installed\n');
     fprintf(2, '  - Insufficient memory for target configuration\n');
     fprintf(2, '\nCheck the code generation report for detailed diagnostics.\n');
 end
@@ -336,9 +336,9 @@ try
     fprintf('Code generation workflow complete.\n');
     fprintf('Next steps:\n');
     fprintf('  1. Review the code generation report\n');
-    fprintf('  2. Open the generated project in STM32CubeIDE\n');
+    fprintf('  2. Open the generated project in ARM Cortex-ACubeIDE\n');
     fprintf('  3. Configure memory sections for weights (Flash) and activations (SDRAM)\n');
-    fprintf('  4. Build and flash to STM32F746G-Discovery\n');
+    fprintf('  4. Build and flash to ARM Cortex-A embedded platform\n');
     fprintf('=============================================================\n');
 
 catch ME

@@ -31,7 +31,7 @@
  */
 void predict_shufflenet_onnx(const float in[150528], float out[1000])
 {
-  /*    Copyright 2026. Generated for STM32F746G-Discovery deployment. */
+  /*    Copyright 2026. Generated for ARM Cortex-A embedded deployment. */
   /*  Wrap as dlarray for network that expects SSCB format */
   predict(in, out);
 }

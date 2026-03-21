@@ -1,6 +1,6 @@
 %% Benchmark Analysis: ShuffleNet V2 C Code Generation Options
 % This script compares the four code generation approaches for deploying
-% ShuffleNet V2 on the STM32F746G-Discovery board (ARM Cortex-M7).
+% ShuffleNet V2 on the ARM Cortex-A embedded platform board (ARM Cortex-A53).
 %
 % It analyzes:
 %   - Generated code size (Flash footprint)
@@ -8,40 +8,37 @@
 %   - Code generation time
 %   - Numerical accuracy vs PyTorch reference
 %   - Deployment complexity
-%   - Estimated inference time on STM32F746G
+%   - Estimated inference time on ARM Cortex-A
 %
 % Prerequisites:
 %   - Run each option's scripts first to generate code
 %   - MATLAB R2026a with Coder and Embedded Coder
 %
-% Copyright 2026. Benchmark for STM32F746G-Discovery deployment.
+% Copyright 2026. Benchmark for ARM Cortex-A embedded platform deployment.
 
 %% Setup
 clear; clc; close all;
 fprintf('=============================================================\n');
 fprintf(' ShuffleNet V2 — Code Generation Benchmark Analysis\n');
-fprintf(' Target: STM32F746G-Discovery (ARM Cortex-M7 @ 216 MHz)\n');
+fprintf(' Target: ARM Cortex-A embedded platform (ARM Cortex-A53 @ 1.5 GHz)\n');
 fprintf('=============================================================\n\n');
 
 scriptDir = fileparts(mfilename('fullpath'));
 projectDir = fullfile(scriptDir, '..');
 
 %% Target Hardware Specifications
-hw.name        = 'STM32F746G-Discovery';
-hw.processor   = 'ARM Cortex-M7';
-hw.clock_mhz   = 216;
-hw.flash_kb    = 1024;      % 1 MB internal Flash
-hw.sram_kb     = 340;       % 320 + 16 + 4 KB
-hw.sdram_kb    = 8192;      % 8 MB external SDRAM
-hw.qspi_kb     = 16384;     % 16 MB external QSPI Flash
-hw.fpu         = 'FPv5-SP (single precision)';
-hw.dsp         = 'Yes (MAC instructions)';
+hw.name        = 'ARM Cortex-A Embedded Platform';
+hw.processor   = 'ARM Cortex-A53 quad-core';
+hw.clock_ghz   = 1.5;
+hw.ram_mb      = 512;       % Typical: 512 MB - 4 GB DDR
+hw.storage_gb  = 8;         % Typical: 4-64 GB eMMC/SD
+hw.simd        = 'NEON 128-bit';
+hw.os          = 'Embedded Linux';
 
 fprintf('Target Hardware:\n');
-fprintf('  %s (%s @ %d MHz)\n', hw.name, hw.processor, hw.clock_mhz);
-fprintf('  Flash: %d KB + %d KB QSPI\n', hw.flash_kb, hw.qspi_kb);
-fprintf('  SRAM:  %d KB + %d KB SDRAM\n', hw.sram_kb, hw.sdram_kb);
-fprintf('  FPU:   %s\n\n', hw.fpu);
+fprintf('  %s (%s @ %.1f GHz)\n', hw.name, hw.processor, hw.clock_ghz);
+fprintf('  RAM: %d MB DDR,  Storage: %d GB eMMC\n', hw.ram_mb, hw.storage_gb);
+fprintf('  SIMD: %s,  OS: %s\n\n', hw.simd, hw.os);
 
 %% Model Specifications
 model.name         = 'ShuffleNet V2 1.0x';
@@ -79,7 +76,7 @@ else
     opt1.num_h_files = 2;
 end
 
-% Estimated metrics for STM32F746G
+% Estimated metrics for ARM Cortex-A
 opt1.weight_flash_kb  = model.params_mb * 1024;  % float32 weights
 opt1.weight_flash_q8  = model.params * 1 / 1024; % int8 weights (KB)
 opt1.activation_ram_kb = 301056 * 4 * 3 / 1024;  % 3 buffers (ping-pong + scratch)
@@ -87,7 +84,7 @@ opt1.code_flash_kb     = 15;   % Estimated compiled code size
 opt1.total_flash_f32   = opt1.weight_flash_kb + opt1.code_flash_kb;
 opt1.total_flash_q8    = opt1.weight_flash_q8 + opt1.code_flash_kb;
 
-% Inference time estimate (based on 146M MACs at ~1 MAC/cycle on Cortex-M7)
+% Inference time estimate (based on 146M MACs at ~1 MAC/cycle on Cortex-A53)
 opt1.est_cycles        = model.macs * 2;  % ~2 cycles per MAC (non-SIMD float)
 opt1.est_time_ms       = opt1.est_cycles / (hw.clock_mhz * 1e3);
 opt1.est_time_ms_opt   = opt1.est_time_ms * 0.6;  % With BN fusion, optimized loops
@@ -115,7 +112,7 @@ opt2 = struct();
 opt2.name = 'PyTorch Coder';
 opt2.method = 'MATLAB Coder Support Package for PyTorch (R2026a)';
 
-opt2Dir = fullfile(projectDir, 'option2_pytorch_coder', 'codegen_output', 'embedded_stm32');
+opt2Dir = fullfile(projectDir, 'option2_pytorch_coder', 'codegen_output', 'embedded_arm_cortex_a');
 if isfolder(opt2Dir)
     cFiles = dir(fullfile(opt2Dir, '**', '*.c'));
     hFiles = dir(fullfile(opt2Dir, '**', '*.h'));
@@ -142,7 +139,7 @@ opt2.accuracy          = 'Numerically equivalent to PyTorch';
 opt2.deployment_ease   = 1;  % Fully automated
 opt2.maintainability   = 4;  % Auto-generated, hard to modify
 opt2.optimization      = 3;  % MATLAB Coder standard optimizations
-opt2.stm32_native      = 'Direct STM32 deployment support';
+opt2.arm_cortex_a_native      = 'Direct ARM Cortex-A deployment support';
 
 fprintf('  Source code:       %.1f KB (est. %d .c, %d .h)\n', ...
     opt2.code_size_kb, opt2.num_c_files, opt2.num_h_files);
@@ -150,7 +147,7 @@ fprintf('  Weight storage:    %.1f KB (float32)\n', opt2.weight_flash_kb);
 fprintf('  Activation RAM:    %.1f KB (optimized by Coder)\n', opt2.activation_ram_kb);
 fprintf('  Est. Flash total:  %.1f KB\n', opt2.total_flash_f32);
 fprintf('  Est. inference:    %.1f ms\n', opt2.est_time_ms_opt);
-fprintf('  STM32 support:     %s\n\n', opt2.stm32_native);
+fprintf('  ARM Cortex-A support:     %s\n\n', opt2.arm_cortex_a_native);
 
 %% Option 3: importNetworkFromPyTorch + MATLAB Coder
 fprintf('=== Option 3: importNetworkFromPyTorch + MATLAB Coder ===\n');
@@ -261,7 +258,7 @@ fprintf('%-30s %-15d %-15d %-15d %-15d\n', 'Optimization level (1-5)', ...
 
 %% Memory Fit Analysis
 fprintf('\n=============================================================\n');
-fprintf(' MEMORY FIT ANALYSIS FOR STM32F746G-Discovery\n');
+fprintf(' MEMORY FIT ANALYSIS FOR ARM Cortex-A embedded platform\n');
 fprintf('=============================================================\n\n');
 
 % Check if model fits in internal Flash (1 MB)
@@ -306,7 +303,7 @@ fprintf('=============================================================\n');
 fprintf(' RECOMMENDATION\n');
 fprintf('=============================================================\n\n');
 
-fprintf('For STM32F746G-Discovery deployment of ShuffleNet V2 1.0x:\n\n');
+fprintf('For ARM Cortex-A embedded platform deployment of ShuffleNet V2 1.0x:\n\n');
 
 fprintf('BEST OPTION: Option 3 (importNetworkFromPyTorch + MATLAB Coder)\n');
 fprintf('  Reasons:\n');

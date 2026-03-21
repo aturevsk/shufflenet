@@ -1,6 +1,6 @@
 %% Import ShuffleNet V2 from ONNX and Generate Embedded C Code
 % This script provides a fallback pathway for deploying ShuffleNet V2 to
-% the STM32F746G-Discovery board by first exporting from PyTorch to ONNX,
+% the ARM Cortex-A embedded platform board by first exporting from PyTorch to ONNX,
 % then importing the ONNX model into MATLAB for code generation.
 %
 % This approach is useful when:
@@ -30,13 +30,13 @@
 % support code generation, enabling direct codegen from ONNX-imported
 % networks without manual layer replacement.
 
-%   Copyright 2026. Generated for STM32F746G-Discovery deployment.
+%   Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
 
 %% Setup
 clear; clc; close all;
 fprintf('=============================================================\n');
 fprintf(' ShuffleNet V2 ONNX Import & Embedded Code Generation\n');
-fprintf(' Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+fprintf(' Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
 fprintf('=============================================================\n\n');
 
 % Resolve paths
@@ -276,11 +276,11 @@ try
     dlcfgA = coder.DeepLearningConfig('none');
     cfgA.DeepLearningConfig = dlcfgA;
 
-    % STM32F746G-Discovery target
+    % ARM Cortex-A embedded platform target
     try
-        cfgA.Hardware = coder.hardware('STM32F746G-Discovery');
+        cfgA.Hardware = coder.hardware('ARM Cortex-A embedded platform');
     catch
-        fprintf('    STM32 support package not installed. Using GenCodeOnly.\n');
+        fprintf('    ARM Cortex-A support package not installed. Using GenCodeOnly.\n');
         cfgA.GenCodeOnly = true;
     end
 
@@ -293,7 +293,7 @@ try
     cfgA.BuildConfiguration = 'Faster Runs';
     cfgA.OptimizeBlockIOStorage = true;
 
-    fprintf('    Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+    fprintf('    Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
     fprintf('    Deep Learning Library: none (pure C)\n');
     fprintf('    Stack limit: 64 KB\n');
 catch ME
@@ -314,7 +314,7 @@ try
     cfgB.DeepLearningConfig = dlcfgB;
 
     try
-        cfgB.Hardware = coder.hardware('STM32F746G-Discovery');
+        cfgB.Hardware = coder.hardware('ARM Cortex-A embedded platform');
     catch
         cfgB.GenCodeOnly = true;
     end
@@ -323,7 +323,7 @@ try
     cfgB.SupportNonFinite = false;
     cfgB.BuildConfiguration = 'Faster Runs';
 
-    fprintf('    Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+    fprintf('    Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
     fprintf('    Deep Learning Library: ARM Compute Library\n');
     fprintf('    ARM Architecture: armv7\n');
 
@@ -428,11 +428,11 @@ fprintf('=============================================================\n');
 fprintf('ONNX import and code generation workflow complete.\n');
 fprintf('\nNext steps:\n');
 fprintf('  1. Review code generation reports in codegen_output/\n');
-fprintf('  2. Import generated C code into STM32CubeIDE project\n');
+fprintf('  2. Import generated C code into ARM Cortex-ACubeIDE project\n');
 fprintf('  3. Place weight arrays in Flash memory sections\n');
 fprintf('  4. Map activation buffers to SDRAM\n');
 fprintf('  5. Implement preprocessing (camera capture, resize, normalize)\n');
-fprintf('  6. Build and deploy to STM32F746G-Discovery\n');
+fprintf('  6. Build and deploy to ARM Cortex-A embedded platform\n');
 fprintf('=============================================================\n');
 
 

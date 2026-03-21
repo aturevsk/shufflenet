@@ -1,7 +1,7 @@
 %% Import ShuffleNet V2 from PyTorch and Generate Embedded C Code
 % This script imports a ShuffleNet V2 model from PyTorch format using
 % importNetworkFromPyTorch, validates it, and generates embedded C code
-% for the STM32F746G-Discovery board (ARM Cortex-M7).
+% for the ARM Cortex-A embedded platform board (ARM Cortex-A53).
 %
 % Workflow:
 %   1. Import model using importNetworkFromPyTorch
@@ -23,13 +23,13 @@
 %
 % Model file: ../shufflenet_exported.pt2 (relative to this script)
 
-%   Copyright 2026. Generated for STM32F746G-Discovery deployment.
+%   Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
 
 %% Setup
 clear; clc; close all;
 fprintf('=============================================================\n');
 fprintf(' ShuffleNet V2 Import from PyTorch & Embedded Code Generation\n');
-fprintf(' Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+fprintf(' Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
 fprintf('=============================================================\n\n');
 
 % Resolve model path
@@ -285,13 +285,13 @@ try
     dlcfgA = coder.DeepLearningConfig('none');
     cfgA.DeepLearningConfig = dlcfgA;
 
-    % STM32 target configuration
-    % Use coder.hardware('STM32F746G-Discovery') if STM32 support package
+    % ARM Cortex-A target configuration
+    % Use coder.hardware('ARM Cortex-A embedded platform') if ARM Cortex-A support package
     % is installed. Otherwise, generate code only (no build).
     try
-        cfgA.Hardware = coder.hardware('STM32F746G-Discovery');
+        cfgA.Hardware = coder.hardware('ARM Cortex-A embedded platform');
     catch
-        fprintf('    STM32 support package not installed. Using GenCodeOnly.\n');
+        fprintf('    ARM Cortex-A support package not installed. Using GenCodeOnly.\n');
         cfgA.GenCodeOnly = true;
     end
 
@@ -304,7 +304,7 @@ try
     cfgA.BuildConfiguration = 'Faster Runs';
     % cfgA.OptimizeBlockIOStorage = true; % Not available in EmbeddedCodeConfig
 
-    fprintf('    Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+    fprintf('    Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
     fprintf('    Deep Learning Library: none (pure C)\n');
     fprintf('    Stack limit: 64 KB\n');
     fprintf('    Constants: kept in source files\n');
@@ -325,9 +325,9 @@ try
     dlcfgB.ArmComputeVersion = '24.02';
     cfgB.DeepLearningConfig = dlcfgB;
 
-    % STM32 target
+    % ARM Cortex-A target
     try
-        cfgB.Hardware = coder.hardware('STM32F746G-Discovery');
+        cfgB.Hardware = coder.hardware('ARM Cortex-A embedded platform');
     catch
         cfgB.GenCodeOnly = true;
     end
@@ -336,7 +336,7 @@ try
     cfgB.SupportNonFinite = false;
     cfgB.BuildConfiguration = 'Faster Runs';
 
-    fprintf('    Target: STM32F746G-Discovery (ARM Cortex-M7)\n');
+    fprintf('    Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
     fprintf('    Deep Learning Library: ARM Compute Library\n');
     fprintf('    ARM Architecture: armv7\n');
 
@@ -441,10 +441,10 @@ fprintf('=============================================================\n');
 fprintf('Code generation workflow complete.\n');
 fprintf('Next steps:\n');
 fprintf('  1. Review the code generation reports in codegen_output/\n');
-fprintf('  2. Import generated code into STM32CubeIDE project\n');
+fprintf('  2. Import generated code into ARM Cortex-ACubeIDE project\n');
 fprintf('  3. Map weights to Flash, activations to SDRAM\n');
 fprintf('  4. Implement camera input and display output on LCD\n');
-fprintf('  5. Build, flash, and test on STM32F746G-Discovery\n');
+fprintf('  5. Build, flash, and test on ARM Cortex-A embedded platform\n');
 fprintf('=============================================================\n');
 
 
