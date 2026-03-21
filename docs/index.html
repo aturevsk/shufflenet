@@ -14,7 +14,7 @@
   --bg: #0f1117; --surface: #1a1d27; --surface2: #222535; --border: #2e3250;
   --accent: #4f8ef7; --green: #22c55e; --yellow: #f59e0b; --red: #ef4444;
   --purple: #a855f7; --text: #e2e8f0; --muted: #7c8db5;
-  --opt1: #22c55e; --opt2: #4f8ef7; --opt3: #a855f7; --opt4: #f59e0b;
+  --opt1: #22c55e; --opt2: #4f8ef7; --opt3: #a855f7; --opt4: #f59e0b; --opt5: #06b6d4;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -85,10 +85,10 @@ code { font-size: 0.82rem; }
 <!-- ═══════════════════ OVERVIEW ═══════════════════ -->
 <div id="overview" class="page active">
 <h2>Project Overview</h2>
-<p>Comparison of 4 approaches for generating embedded C code from a PyTorch <b>ShuffleNet V2 1.0x</b> classification model, targeting <b>ARM Cortex-A embedded platforms</b> (e.g., Raspberry Pi 4, NXP i.MX 8M, Qualcomm RB3). 100 test vectors validate numerical equivalence against PyTorch reference.</p>
+<p>Comparison of 5 approaches for generating embedded C code from a PyTorch <b>ShuffleNet V2 1.0x</b> classification model, targeting <b>ARM Cortex-A embedded platforms</b> (e.g., Raspberry Pi 4, NXP i.MX 8M, Qualcomm RB3). 100 test vectors validate numerical equivalence against PyTorch reference.</p>
 
 <div class="grid4" style="margin: 20px 0">
-  <div class="stat-card"><div class="stat-val" style="color:var(--green)">4</div><div class="stat-label">Code Generation Options</div></div>
+  <div class="stat-card"><div class="stat-val" style="color:var(--green)">5</div><div class="stat-label">Code Generation Options</div></div>
   <div class="stat-card"><div class="stat-val" style="color:var(--accent)">100</div><div class="stat-label">Equivalence Test Vectors</div></div>
   <div class="stat-card"><div class="stat-val" style="color:var(--purple)">2.28M</div><div class="stat-label">Model Parameters</div></div>
   <div class="stat-card"><div class="stat-val" style="color:var(--yellow)">146M</div><div class="stat-label">MACs per Inference</div></div>
@@ -119,6 +119,7 @@ code { font-size: 0.82rem; }
 <tr><td><span class="opt-dot" style="background:var(--opt2)"></span>2</td><td>MATLAB Coder PyTorch SP (MLIR/TOSA)</td><td><span class="badge badge-pass">COMPLETE</span></td><td>4,439 KB</td><td>63,586</td><td>8 .c + 10 .h</td></tr>
 <tr><td><span class="opt-dot" style="background:var(--opt3)"></span>3</td><td>importNetworkFromPyTorch &rarr; dlnetwork</td><td><span class="badge badge-fail">CODEGEN FAILED</span></td><td>&mdash;</td><td>&mdash;</td><td>30+ custom layers unsupported</td></tr>
 <tr><td><span class="opt-dot" style="background:var(--opt4)"></span>4</td><td>ONNX &rarr; importNetworkFromONNX &rarr; dlnetwork</td><td><span class="badge badge-pass">COMPLETE</span></td><td>4,495 KB</td><td>64,412</td><td>15 .c + 18 .h</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt5)"></span>5</td><td>Rebuilt dlnetwork (codegen-compatible)</td><td><span class="badge badge-pass">COMPLETE</span></td><td>4,468 KB</td><td>~63,000</td><td>14 .c + 16 .h</td></tr>
 </table>
 </div>
 
@@ -191,6 +192,7 @@ code { font-size: 0.82rem; }
 <table>
 <tr><th>Option</th><th>Mean (ms)</th><th>Std (ms)</th><th>Min (ms)</th><th>Throughput</th><th>Binary</th><th>vs Opt 1</th></tr>
 <tr><td><span class="opt-dot" style="background:var(--opt2)"></span>Opt 2: PyTorch Coder (MLIR)</td><td class="highlight-best">29.25</td><td class="highlight-best">0.39</td><td class="highlight-best">28.02</td><td class="highlight-best">34.2/s</td><td>1.2 MB</td><td class="highlight-best">5.96x</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt5)"></span>Opt 5: Rebuilt dlnetwork</td><td>31.53</td><td>0.43</td><td>30.24</td><td>31.7/s</td><td>~1.2 MB</td><td>5.53x</td></tr>
 <tr><td><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4: ONNX Import + Coder</td><td>32.05</td><td>0.47</td><td>30.70</td><td>31.2/s</td><td>1.2 MB</td><td>5.44x</td></tr>
 <tr><td><span class="opt-dot" style="background:var(--opt1)"></span>Opt 1: Hand-Crafted C</td><td>174.44</td><td>2.40</td><td>169.30</td><td>5.7/s</td><td>101 KB</td><td>1.00x</td></tr>
 </table>
@@ -216,13 +218,13 @@ code { font-size: 0.82rem; }
 <div class="card">
 <div class="card-title">Generated Code Metrics</div>
 <table>
-<tr><th>Metric</th><th><span class="opt-dot" style="background:var(--opt1)"></span>Opt 1</th><th><span class="opt-dot" style="background:var(--opt2)"></span>Opt 2</th><th><span class="opt-dot" style="background:var(--opt3)"></span>Opt 3</th><th><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4</th></tr>
-<tr><td>Source code size</td><td class="highlight-best">71.5 KB</td><td>4,439 KB</td><td>~4,400 KB</td><td>4,495 KB</td></tr>
-<tr><td>Lines of C code</td><td class="highlight-best">1,660</td><td>63,586</td><td>~62,000</td><td>64,412</td></tr>
-<tr><td>Source files</td><td class="highlight-best">3</td><td>18</td><td>~33</td><td>33</td></tr>
-<tr><td>Dominant C file</td><td>shufflenet_v2.c (1,215)</td><td>mInvoke_shufflenet.c (62,977)</td><td>callPredict.c</td><td>conv2dDirect*.c (61,961)</td></tr>
-<tr><td>Human readable</td><td class="highlight-best">Yes</td><td>No (auto-gen)</td><td>No</td><td>No</td></tr>
-<tr><td>Code size vs Opt 1</td><td>1.0x</td><td>62x</td><td>~62x</td><td>63x</td></tr>
+<tr><th>Metric</th><th><span class="opt-dot" style="background:var(--opt1)"></span>Opt 1</th><th><span class="opt-dot" style="background:var(--opt2)"></span>Opt 2</th><th><span class="opt-dot" style="background:var(--opt3)"></span>Opt 3</th><th><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4</th><th><span class="opt-dot" style="background:var(--opt5)"></span>Opt 5</th></tr>
+<tr><td>Source code size</td><td class="highlight-best">71.5 KB</td><td>4,439 KB</td><td>~4,400 KB</td><td>4,495 KB</td><td>4,468 KB</td></tr>
+<tr><td>Lines of C code</td><td class="highlight-best">1,660</td><td>63,586</td><td>~62,000</td><td>64,412</td><td>~63,000</td></tr>
+<tr><td>Source files</td><td class="highlight-best">3</td><td>18</td><td>~33</td><td>33</td><td>30</td></tr>
+<tr><td>Dominant C file</td><td>shufflenet_v2.c (1,215)</td><td>mInvoke_shufflenet.c (62,977)</td><td>callPredict.c</td><td>conv2dDirect*.c (61,961)</td><td>conv2dDirect*.c</td></tr>
+<tr><td>Human readable</td><td class="highlight-best">Yes</td><td>No (auto-gen)</td><td>No</td><td>No</td><td>No</td></tr>
+<tr><td>Code size vs Opt 1</td><td>1.0x</td><td>62x</td><td>~62x</td><td>63x</td><td>62x</td></tr>
 </table>
 <p style="margin-top:8px"><b>Why are auto-generated files so large?</b> Options 2-4 embed all 2.28M weight parameters as C array initializers (62K+ lines of float constants), while Option 1 uses a separate header. The actual inference logic is only ~800-1200 lines in all options.</p>
 </div>
@@ -340,14 +342,28 @@ code { font-size: 0.82rem; }
 <p><b>Best for:</b> Fallback when PyTorch import has issues, or when ONNX is the only available format.</p>
 </div>
 
+<div class="card" style="border-left: 3px solid var(--opt5)">
+<div class="card-title"><span class="opt-dot" style="background:var(--opt5)"></span>Option 5: Rebuilt dlnetwork (codegen-compatible) <span class="badge badge-pass">COMPLETE</span></div>
+<p><b>Approach:</b> Import via <code>importNetworkFromPyTorch</code>, then replace all 30 <code>AutogeneratedFromPyTorch</code> custom layers with codegen-compatible equivalents: <code>ChannelShuffleLayer</code> (reshape+permute), <code>ChannelSplitLayer</code> (indexing), and <code>globalAveragePooling2dLayer</code>.</p>
+<p><b>Key insight:</b> This option <b>RESCUES the failed Option 3 path</b> by replacing all 30 codegen-incompatible custom layers with simple, codegen-compatible alternatives. The mathematical operations are identical (reshape+permute for channel shuffle, indexing for channel split), just implemented in a different class hierarchy that MATLAB Coder understands.</p>
+<p><b>Strengths:</b> Rescues the PyTorch import path, codegen succeeds with C output, numerically equivalent to Options 3/4 (max error 4.77e-06, cosine 1.0000000000), competitive performance (31.53 ms, 5.53x vs Opt 1).</p>
+<p><b>Weaknesses:</b> Requires manual layer replacement (though the replacement is straightforward), similar code size to Options 2/4.</p>
+<p><b>Equivalence:</b> Max error 4.77e-06 vs original imported network, cosine similarity 1.0000000000, top-1 class match.</p>
+<p><b>C benchmark:</b> 7&times;100 trials, gcc -O3: mean 31.53 ms, std 0.43, min 30.24, throughput 31.7/s. Binary ~1.2 MB.</p>
+<p><b>Generated code:</b> 14 .c files, 16 .h files, 4,468 KB total.</p>
+<p><b>Key files:</b> <code>ChannelShuffleLayer.m</code>, <code>ChannelSplitLayer.m</code>, <code>run_option5.m</code>, <code>predict_shufflenet_v5.m</code></p>
+<p><b>Best for:</b> When you want to use the PyTorch import path but need C code generation &mdash; this is the rescue path for Option 3.</p>
+</div>
+
 <div class="card">
 <div class="card-title">Recommendation Matrix</div>
 <table>
 <tr><th>Priority</th><th>Recommended Option</th><th>Rationale</th></tr>
 <tr><td>Best overall</td><td><span class="opt-dot" style="background:var(--opt2)"></span><span class="highlight-best">Option 2</span></td><td>Fastest C code (29.25 ms), fully automated, direct .pt2&rarr;C</td></tr>
+<tr><td>Best import path</td><td><span class="opt-dot" style="background:var(--opt5)"></span><span class="highlight-best">Option 5</span></td><td>Rescues Option 3; codegen-compatible rebuilt dlnetwork (31.53 ms)</td></tr>
 <tr><td>Best fallback</td><td><span class="opt-dot" style="background:var(--opt4)"></span>Option 4</td><td>ONNX universally supported, R2026a codegen works, 32.05 ms</td></tr>
 <tr><td>Maximum control</td><td><span class="opt-dot" style="background:var(--opt1)"></span>Option 1</td><td>Smallest binary (101 KB), int8 support, but 6x slower without BLAS</td></tr>
-<tr><td style="color:var(--red)">Not recommended</td><td><span class="opt-dot" style="background:var(--opt3)"></span>Option 3</td><td>C codegen fails &mdash; AutogeneratedFromPyTorch layers unsupported</td></tr>
+<tr><td style="color:var(--red)">Not recommended</td><td><span class="opt-dot" style="background:var(--opt3)"></span>Option 3</td><td>C codegen fails &mdash; AutogeneratedFromPyTorch layers unsupported (use Option 5 instead)</td></tr>
 </table>
 </div>
 </div>
@@ -370,9 +386,16 @@ code { font-size: 0.82rem; }
 
 <h3><span class="opt-dot" style="background:var(--opt3)"></span>Option 3: importNetworkFromPyTorch</h3>
 <ul class="issue-list">
-<li><b>BLOCKING: AutogeneratedFromPyTorch base class</b> &mdash; <code>importNetworkFromPyTorch</code> generates 30+ custom layers (view_view, chunk, mean) that inherit from <code>nnet.layer.AutogeneratedFromPyTorch</code>. This base class <b>does not support MATLAB Coder</b>. Adding <code>%#codegen</code> pragmas is insufficient &mdash; the class itself is incompatible.<br><b>Status:</b> <span class="badge badge-fail">UNRESOLVED</span> &mdash; no workaround available. Would require manually rewriting all 30 custom layers from scratch.</li>
+<li class="resolved"><b>RESOLVED: AutogeneratedFromPyTorch base class</b> &mdash; <code>importNetworkFromPyTorch</code> generates 30+ custom layers (view_view, chunk, mean) that inherit from <code>nnet.layer.AutogeneratedFromPyTorch</code>. This base class <b>does not support MATLAB Coder</b>. Adding <code>%#codegen</code> pragmas is insufficient &mdash; the class itself is incompatible.<br><b>Fix:</b> <span class="badge badge-pass">Option 5</span> &mdash; Replace all 30 custom layers with codegen-compatible equivalents (ChannelShuffleLayer, ChannelSplitLayer, globalAveragePooling2dLayer). Same math, different class hierarchy.</li>
 <li class="resolved"><b>NetworkLayer containers</b> &mdash; Nested module structure requires <code>expandLayers()</code>.<br><b>Fix:</b> <code>net = expandLayers(net)</code></li>
 <li class="resolved"><b>MATLAB inference works</b> &mdash; Despite codegen failure, the imported dlnetwork runs correctly in MATLAB (6.98 ms avg, bit-identical to Option 4).</li>
+</ul>
+
+<h3><span class="opt-dot" style="background:var(--opt5)"></span>Option 5: Rebuilt dlnetwork</h3>
+<ul class="issue-list">
+<li class="resolved"><b>Key insight: replace base class, keep same operations</b> &mdash; The 30 <code>AutogeneratedFromPyTorch</code> custom layers perform simple operations (reshape+permute for channel shuffle, indexing for channel split, mean for global avg pool). By reimplementing these as codegen-compatible <code>ChannelShuffleLayer</code>, <code>ChannelSplitLayer</code>, and <code>globalAveragePooling2dLayer</code>, the network becomes fully compatible with MATLAB Coder.<br><b>Result:</b> <span class="badge badge-pass">C codegen succeeded</span> &mdash; 14 .c files, 16 .h files, 4,468 KB</li>
+<li class="resolved"><b>Numerical equivalence confirmed</b> &mdash; Max error 4.77e-06 vs original imported network, cosine similarity 1.0000000000, top-1 class match.<br><b>Verdict:</b> Mathematically identical to the original Option 3 dlnetwork, just with a different (codegen-compatible) class hierarchy.</li>
+<li class="resolved"><b>Competitive C performance</b> &mdash; 31.53 ms mean inference (5.53x vs Opt 1), only 7.8% slower than the fastest Option 2.<br><b>Impact:</b> Proves the PyTorch import path is viable for embedded C deployment when combined with layer replacement.</li>
 </ul>
 
 <h3><span class="opt-dot" style="background:var(--opt4)"></span>Option 4: ONNX Import</h3>
@@ -434,6 +457,24 @@ cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 inputType = coder.typeof(single(0), [224 224 3 1]);
 codegen -config cfg predict_shufflenet -args {inputType}</code></pre>
 
+<h3><span class="opt-dot" style="background:var(--opt5)"></span>Option 5: ChannelShuffleLayer predict Method</h3>
+<pre><code class="language-matlab">function Z = predict(layer, X)
+    % Channel shuffle: reshape to [H, W, groups, channels_per_group, B]
+    % then permute groups and channels_per_group, then flatten back
+    [H, W, C, B] = size(X);
+    groups = layer.NumGroups;
+    cpg = C / groups;  % channels per group
+
+    % Reshape: [H, W, C, B] -> [H, W, groups, cpg, B]
+    X = reshape(X, [H, W, groups, cpg, B]);
+
+    % Permute groups and channels: [H, W, cpg, groups, B]
+    X = permute(X, [1 2 4 3 5]);
+
+    % Flatten back: [H, W, C, B]
+    Z = reshape(X, [H, W, C, B]);
+end</code></pre>
+
 <h3><span class="opt-dot" style="background:var(--opt4)"></span>Option 4: ONNX Export + Import</h3>
 <pre><code class="language-python"># Python: Export to ONNX (must use legacy exporter)
 torch.onnx.export(model, dummy_input, 'shufflenet_v2.onnx',
@@ -449,7 +490,7 @@ net = importNetworkFromONNX('shufflenet_v2.onnx', ...
 </div><!-- end content -->
 
 <div class="footer">
-  ShuffleNet V2 1.0x &mdash; Embedded C Code Generation for ARM Cortex-A Platforms &bull; MATLAB R2026a &bull; 4 options compared &bull; 100 test vectors &bull; March 2026
+  ShuffleNet V2 1.0x &mdash; Embedded C Code Generation for ARM Cortex-A Platforms &bull; MATLAB R2026a &bull; 5 options compared &bull; 100 test vectors &bull; March 2026
 </div>
 </div><!-- end app -->
 
@@ -463,8 +504,8 @@ function show(id) {
 }
 
 // ── Chart colors ──
-const OC = ['#22c55e','#4f8ef7','#a855f7','#f59e0b'];
-const OL = ['Opt 1: Hand-crafted','Opt 2: PyTorch Coder','Opt 3: PT Import','Opt 4: ONNX Import'];
+const OC = ['#22c55e','#4f8ef7','#a855f7','#f59e0b','#06b6d4'];
+const OL = ['Opt 1: Hand-crafted','Opt 2: PyTorch Coder','Opt 3: PT Import','Opt 4: ONNX Import','Opt 5: Rebuilt dlnetwork'];
 const chartDefaults = {
   color: '#7c8db5',
   borderColor: '#2e3250',
@@ -528,12 +569,12 @@ new Chart(document.getElementById('chartCosine'), {
 new Chart(document.getElementById('chartInferSpeed'), {
   type: 'bar',
   data: {
-    labels: ['Opt 2: PyTorch Coder\n(compiled C)', 'Opt 4: ONNX Import\n(compiled C)', 'Opt 1: Hand-Crafted\n(compiled C)'],
+    labels: ['Opt 2: PyTorch Coder\n(compiled C)', 'Opt 5: Rebuilt dlnetwork\n(compiled C)', 'Opt 4: ONNX Import\n(compiled C)', 'Opt 1: Hand-Crafted\n(compiled C)'],
     datasets: [{
       label: 'Mean inference (ms)',
-      data: [29.25, 32.05, 174.44],
-      backgroundColor: [OC[1], OC[3], OC[0]],
-      borderColor: [OC[1], OC[3], OC[0]],
+      data: [29.25, 31.53, 32.05, 174.44],
+      backgroundColor: [OC[1], OC[4], OC[3], OC[0]],
+      borderColor: [OC[1], OC[4], OC[3], OC[0]],
       borderWidth: 1,
     }]
   },
@@ -558,7 +599,7 @@ new Chart(document.getElementById('chartCodeSize'), {
     labels: OL,
     datasets: [{
       label: 'Source code (KB)',
-      data: [71.5, 4439, 4400, 4495],
+      data: [71.5, 4439, 4400, 4495, 4468],
       backgroundColor: OC,
       borderColor: OC,
       borderWidth: 1,
@@ -585,7 +626,7 @@ new Chart(document.getElementById('chartLinesOfC'), {
     labels: OL,
     datasets: [{
       label: 'Lines of C',
-      data: [1660, 63586, 62000, 64412],
+      data: [1660, 63586, 62000, 64412, 63000],
       backgroundColor: OC,
     }]
   },
@@ -610,7 +651,7 @@ new Chart(document.getElementById('chartFilesCount'), {
     labels: OL,
     datasets: [{
       label: 'C/H source files',
-      data: [3, 18, 33, 33],
+      data: [3, 18, 33, 33, 30],
       backgroundColor: OC,
     }]
   },
