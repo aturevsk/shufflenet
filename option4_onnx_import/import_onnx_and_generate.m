@@ -228,6 +228,7 @@ try
     mexCfg = coder.config('mex');
     mexCfg.TargetLang = 'C';
     mexCfg.GenerateReport = true;
+    mexCfg.SIMDAcceleration = 'Full'; % AVX2 SIMD for host MEX
 
     % Use MKL-DNN for efficient host-side MEX inference
     dlcfg = coder.DeepLearningConfig('mkldnn');
@@ -274,11 +275,12 @@ try
     % Library-free: pure C code with no external DNN library dependencies
     % This produces standalone C code that can run on any ARM Cortex-M target
     dlcfgA = coder.DeepLearningConfig('none');
+    dlcfgA.LearnablesCompression = 'bfloat16'; % ~50% weight memory reduction
     cfgA.DeepLearningConfig = dlcfgA;
 
-    % ARM Cortex-A embedded platform target
+    % Raspberry Pi target
     try
-        cfgA.Hardware = coder.hardware('ARM Cortex-A embedded platform');
+        cfgA.Hardware = coder.hardware('Raspberry Pi');
     catch
         fprintf('    ARM Cortex-A support package not installed. Using GenCodeOnly.\n');
         cfgA.GenCodeOnly = true;
@@ -288,8 +290,12 @@ try
     cfgA.StackUsageMax = 65536; % 64 KB
     cfgA.EnableMemcpy = true;
     cfgA.MemcpyThreshold = 64;
-    cfgA.EnableOpenMP = false;
+    cfgA.EnableOpenMP = true; % Cortex-A53 is multi-core (up to 4 cores)
     cfgA.SupportNonFinite = false;
+    cfgA.InstructionSetExtensions = 'Neon v7'; % SIMD for Cortex-A53
+    cfgA.OptimizeReductions = true; % SIMD for sum/product reductions
+    cfgA.InstructionSetExtensionsConfig.FMA = 'on'; % Fused multiply-add SIMD instructions
+    cfgA.LargeConstantThreshold = 0;
     cfgA.BuildConfiguration = 'Faster Runs';
     cfgA.OptimizeBlockIOStorage = true;
 
@@ -314,13 +320,17 @@ try
     cfgB.DeepLearningConfig = dlcfgB;
 
     try
-        cfgB.Hardware = coder.hardware('ARM Cortex-A embedded platform');
+        cfgB.Hardware = coder.hardware('Raspberry Pi');
     catch
         cfgB.GenCodeOnly = true;
     end
     cfgB.StackUsageMax = 65536;
-    cfgB.EnableOpenMP = false;
+    cfgB.EnableOpenMP = true; % Cortex-A53 is multi-core (up to 4 cores)
     cfgB.SupportNonFinite = false;
+    cfgB.InstructionSetExtensions = 'Neon v7'; % SIMD for Cortex-A53
+    cfgB.OptimizeReductions = true; % SIMD for sum/product reductions
+    cfgB.InstructionSetExtensionsConfig.FMA = 'on'; % Fused multiply-add SIMD instructions
+    cfgB.LargeConstantThreshold = 0;
     cfgB.BuildConfiguration = 'Faster Runs';
 
     fprintf('    Target: ARM Cortex-A embedded platform (ARM Cortex-A53)\n');
