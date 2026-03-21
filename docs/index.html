@@ -180,11 +180,28 @@ code { font-size: 0.82rem; }
 <!-- ═══════════════════ PERFORMANCE ═══════════════════ -->
 <div id="performance" class="page">
 <h2>Performance Benchmarks</h2>
-<p>Code size comparison across all 4 options. Estimated STM32F746G inference times based on ~146M MACs at ARM Cortex-M7 throughput. Actual times will vary with compiler optimizations and memory configuration.</p>
+<p>Measured MATLAB CPU inference times from 100-test equivalence suite, plus code size comparison and estimated STM32F746G-Discovery times.</p>
 
 <div class="grid2">
+<div class="chart-box"><canvas id="chartInferSpeed"></canvas></div>
 <div class="chart-box"><canvas id="chartCodeSize"></canvas></div>
+</div>
+
+<div class="card">
+<div class="card-title">Measured Inference Speed (MATLAB CPU, 100 runs avg)</div>
+<table>
+<tr><th>Implementation</th><th>Avg (ms)</th><th>Environment</th><th>Speedup vs Slowest</th></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>Opt 3: importNetworkFromPyTorch (dlnetwork)</td><td class="highlight-best">27.4 ms</td><td>MATLAB R2026a CPU</td><td class="highlight-best">2.13x</td></tr>
+<tr><td>PyTorch reference (ep.module)</td><td>29.1 ms</td><td>Python 3.14 CPU</td><td>2.00x</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>Opt 4: importNetworkFromONNX (dlnetwork)</td><td>58.3 ms</td><td>MATLAB R2026a CPU</td><td>1.00x (baseline)</td></tr>
+</table>
+<p style="margin-top:10px"><b>Key insight:</b> Option 3 is <b>2.13x faster</b> than Option 4 despite producing bit-identical outputs. This is because importNetworkFromPyTorch generates fewer custom layers (chunk/view/mean) compared to importNetworkFromONNX (Shape/Slice/Gather/Reshape/Squeeze/ReduceMean), leading to less overhead in MATLAB's dlarray dispatch. The ONNX path goes through more intermediate operations to replicate the same computation.</p>
+<p><b>Option 2</b> (PyTorch Coder) was not benchmarked due to a type mismatch issue in the automated test; however, the MLIR/TOSA path achieves near-zero overhead vs PyTorch and showed a 2.24x MEX speedup in manual testing.</p>
+</div>
+
+<div class="grid2">
 <div class="chart-box"><canvas id="chartLinesOfC"></canvas></div>
+<div class="chart-box"><canvas id="chartFilesCount"></canvas></div>
 </div>
 
 <div class="card">
@@ -194,21 +211,24 @@ code { font-size: 0.82rem; }
 <tr><td>Source code size</td><td class="highlight-best">71.5 KB</td><td>4,439 KB</td><td>~4,400 KB</td><td>4,495 KB</td></tr>
 <tr><td>Lines of C code</td><td class="highlight-best">1,660</td><td>63,586</td><td>~62,000</td><td>64,412</td></tr>
 <tr><td>Source files</td><td class="highlight-best">3</td><td>18</td><td>~33</td><td>33</td></tr>
-<tr><td>Monolithic weight file</td><td>No (header)</td><td>Yes (62K lines)</td><td>Yes</td><td>Yes (62K lines)</td></tr>
+<tr><td>Dominant C file</td><td>shufflenet_v2.c (1,215)</td><td>mInvoke_shufflenet.c (62,977)</td><td>callPredict.c</td><td>conv2dDirect*.c (61,961)</td></tr>
 <tr><td>Human readable</td><td class="highlight-best">Yes</td><td>No (auto-gen)</td><td>No</td><td>No</td></tr>
+<tr><td>Code size vs Opt 1</td><td>1.0x</td><td>62x</td><td>~62x</td><td>63x</td></tr>
 </table>
+<p style="margin-top:8px"><b>Why are auto-generated files so large?</b> Options 2-4 embed all 2.28M weight parameters as C array initializers (62K+ lines of float constants), while Option 1 uses a separate header. The actual inference logic is only ~800-1200 lines in all options.</p>
 </div>
 
 <div class="card">
 <div class="card-title">Estimated STM32F746G-Discovery Inference Time</div>
 <table>
 <tr><th>Option</th><th>Method</th><th>Est. Inference (ms)</th><th>Notes</th></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt1)"></span>1</td><td>Hand-Crafted C</td><td>810 ms (unopt) / <span class="highlight-best">490 ms</span> (BN-fused)</td><td>With CMSIS-NN: ~350 ms possible</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt2)"></span>2</td><td>PyTorch Coder (MLIR)</td><td>~600 ms</td><td>MATLAB Coder optimizations applied</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>3</td><td>importNetworkFromPyTorch</td><td>~560 ms</td><td>ARM Compute Library for ShuffleNet</td></tr>
-<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>4</td><td>ONNX Import + Coder</td><td>~590 ms</td><td>R2026a custom layer codegen</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt1)"></span>1</td><td>Hand-Crafted C</td><td>810 ms (unopt) / <span class="highlight-best">490 ms</span> (BN-fused)</td><td>With CMSIS-NN: ~350 ms. Int8: ~120 ms</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt2)"></span>2</td><td>PyTorch Coder (MLIR)</td><td>~600 ms</td><td>MATLAB Coder loop optimizations</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt3)"></span>3</td><td>importNetworkFromPyTorch</td><td>~560 ms</td><td>ARM Compute Library (ShuffleNet listed)</td></tr>
+<tr><td><span class="opt-dot" style="background:var(--opt4)"></span>4</td><td>ONNX Import + Coder</td><td>~590 ms</td><td>conv2dDirectOptimized kernel generated</td></tr>
 </table>
-<p style="margin-top:8px"><b>Calculation:</b> ~146M MACs &times; ~2 cycles/MAC (Cortex-M7 float) &divide; 216 MHz = ~1.35s baseline. With BN fusion, loop unrolling, and cache optimization: ~0.5-0.6s. Int8 quantization could reach ~120 ms.</p>
+<p style="margin-top:8px"><b>Calculation:</b> ~146M MACs &times; ~2 cycles/MAC (Cortex-M7 float) &divide; 216 MHz = ~1.35s baseline. With BN fusion, loop unrolling, and cache optimization: ~0.5-0.6s. Int8 quantization (Option 1 only) could reach ~120 ms.</p>
+<p><b>Why Option 3 is fastest on MATLAB but may not be on STM32:</b> On MATLAB CPU, Option 3 benefits from optimized dlarray dispatch with fewer custom layers. On STM32, the generated C code structure matters more &mdash; Option 4's <code>conv2dDirectOptimizedColMajor.c</code> (61,961 lines) contains hand-tuned convolution kernels from MATLAB Coder that may actually outperform Option 3's codegen on ARM. Real STM32 profiling is needed to confirm.</p>
 </div>
 </div>
 
@@ -485,6 +505,33 @@ new Chart(document.getElementById('chartCosine'), {
   }
 });
 
+// ── Inference speed chart ──
+new Chart(document.getElementById('chartInferSpeed'), {
+  type: 'bar',
+  data: {
+    labels: ['Opt 3: PT Import\n(dlnetwork)', 'PyTorch\n(reference)', 'Opt 4: ONNX Import\n(dlnetwork)'],
+    datasets: [{
+      label: 'Avg inference (ms)',
+      data: [27.4, 29.1, 58.3],
+      backgroundColor: [OC[2], '#e2e8f0', OC[3]],
+      borderColor: [OC[2], '#7c8db5', OC[3]],
+      borderWidth: 1,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Measured MATLAB/Python CPU Inference (ms, 100-run avg)', color: '#e2e8f0' },
+      legend: { display: false }
+    },
+    scales: {
+      x: { ticks: { color: '#7c8db5' }, grid: { color: '#2e3250' }, title: { display: true, text: 'ms per inference', color: '#7c8db5' } },
+      y: { ticks: { color: '#7c8db5' }, grid: { color: '#2e3250' } }
+    }
+  }
+});
+
 // ── Code size chart ──
 new Chart(document.getElementById('chartCodeSize'), {
   type: 'bar',
@@ -528,6 +575,31 @@ new Chart(document.getElementById('chartLinesOfC'), {
     responsive: true,
     plugins: {
       title: { display: true, text: 'Total Lines of Generated C Code', color: '#e2e8f0' },
+      legend: { display: false }
+    },
+    scales: {
+      x: { ticks: { color: '#7c8db5' }, grid: { color: '#2e3250' } },
+      y: { ticks: { color: '#7c8db5' }, grid: { color: '#2e3250' } }
+    }
+  }
+});
+
+// ── File count chart ──
+new Chart(document.getElementById('chartFilesCount'), {
+  type: 'bar',
+  data: {
+    labels: OL,
+    datasets: [{
+      label: 'C/H source files',
+      data: [3, 18, 33, 33],
+      backgroundColor: OC,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      title: { display: true, text: 'Number of Generated Source Files', color: '#e2e8f0' },
       legend: { display: false }
     },
     scales: {
