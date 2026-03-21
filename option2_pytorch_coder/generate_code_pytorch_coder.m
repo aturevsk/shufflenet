@@ -127,6 +127,7 @@ try
     mexCfg.TargetLang = 'C';
     mexCfg.GenerateReport = true;
     mexCfg.ReportPotentialDifferences = true;
+    mexCfg.SIMDAcceleration = 'Full'; % AVX2 SIMD for host MEX
 
     % Define input types for code generation
     %   input: single-precision tensor [1 x 3 x 224 x 224]
@@ -195,11 +196,11 @@ try
     cfg = coder.config('lib', 'ecoder', true);
 
     % Target hardware: configure for ARM Cortex-M (generic)
-    % Note: Use coder.hardware('ARM Cortex-A embedded platform') if the
-    % ARM cross-compilation toolchain is installed.
+    % Note: Use coder.hardware('Raspberry Pi') if the
+    % Raspberry Pi support package is installed.
     try
-        cfg.Hardware = coder.hardware('ARM Cortex-A embedded platform');
-        fprintf('Target hardware: ARM Cortex-A embedded platform\n');
+        cfg.Hardware = coder.hardware('Raspberry Pi');
+        fprintf('Target hardware: Raspberry Pi\n');
     catch
         fprintf('ARM Cortex-A support package not installed.\n');
         fprintf('Using generic ARM Cortex-M configuration.\n');
@@ -218,8 +219,12 @@ try
     % Memory optimization settings
     cfg.EnableMemcpy = true;
     cfg.MemcpyThreshold = 64;
-    cfg.EnableOpenMP = false; % Single-core Cortex-A53
+    cfg.EnableOpenMP = true; % Cortex-A53 is multi-core (up to 4 cores)
     cfg.SupportNonFinite = false; % Save code size
+    cfg.InstructionSetExtensions = 'Neon v7'; % SIMD for Cortex-A53
+    cfg.OptimizeReductions = true; % SIMD for sum/product reductions
+    cfg.InstructionSetExtensionsConfig.FMA = 'on'; % Fused multiply-add SIMD instructions
+    cfg.LargeConstantThreshold = 0;
 
     % Optimization settings for embedded
     cfg.BuildConfiguration = 'Faster Runs';
@@ -229,7 +234,8 @@ try
     cfg.SaturateOnIntegerOverflow = false;
 
     fprintf('  Build configuration: Faster Runs\n');
-    fprintf('  OpenMP: disabled (single-core target)\n');
+    fprintf('  OpenMP: enabled (multi-core Cortex-A53)\n');
+    fprintf('  SIMD: Neon\n');
     fprintf('  Non-finite support: disabled (code size optimization)\n');
 
 catch ME

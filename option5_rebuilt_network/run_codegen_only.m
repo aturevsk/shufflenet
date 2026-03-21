@@ -7,9 +7,20 @@ inputType = coder.typeof(single(0), [224 224 3 1]);
 
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
-cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
+dlcfg = coder.DeepLearningConfig('none');
+dlcfg.LearnablesCompression = 'bfloat16'; % ~50% weight memory reduction
+cfg.DeepLearningConfig = dlcfg;
 cfg.GenerateReport = true;
 cfg.GenCodeOnly = true;
+cfg.EnableOpenMP = true; % Cortex-A53 is multi-core (up to 4 cores)
+cfg.EnableMemcpy = true;
+cfg.MemcpyThreshold = 64;
+cfg.SupportNonFinite = false;
+cfg.InstructionSetExtensions = 'Neon v7'; % SIMD for Cortex-A53
+cfg.OptimizeReductions = true; % SIMD for sum/product reductions
+cfg.InstructionSetExtensionsConfig.FMA = 'on'; % Fused multiply-add SIMD instructions
+cfg.LargeConstantThreshold = 0;
+cfg.BuildConfiguration = 'Faster Runs';
 
 try
     tStart = tic;
