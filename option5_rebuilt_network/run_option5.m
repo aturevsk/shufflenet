@@ -205,13 +205,14 @@ fprintf('  Saved: shufflenet_v5_dlnetwork.mat\n');
 
 %% Phase 6: Generate MEX for validation
 fprintf('\n--- Phase 6: Generate MEX ---\n');
-inputType = coder.typeof(single(0), [224 224 3 1], [false false false true]);
+inputType = coder.typeof(single(0), [224 224 3 1], [false false false false]);
 
 try
     tStart = tic;
     mexDir = fullfile(scriptDir, 'mexOutputDir');
     cfg = coder.config('mex');
     cfg.TargetLang = 'C';
+    cfg.SIMDAcceleration = 'full';  % Expert fix #3: SIMD for best MEX perf
     cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 
     codegen -config cfg ...
@@ -234,9 +235,28 @@ try
     embeddedDir = fullfile(scriptDir, 'embeddedDir');
     cfg = coder.config('lib', 'ecoder', true);
     cfg.TargetLang = 'C';
-    cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
     cfg.GenerateReport = true;
     cfg.GenCodeOnly = true;
+
+    % Deep learning config (library-free)
+    dlcfg = coder.DeepLearningConfig('none');
+    cfg.DeepLearningConfig = dlcfg;
+
+    % Expert fix #1: NEON SIMD (property of cfg, not dlcfg)
+    cfg.InstructionSetExtensions = 'Neon v7';
+
+    % Expert fix #2: valid Embedded Coder hardware name
+    try
+        cfg.Hardware = coder.hardware('Raspberry Pi');
+    catch
+        fprintf('  (Raspberry Pi support package not installed, using GenCodeOnly)\n');
+    end
+
+    % Expert fix #4: weights in binary files
+    cfg.LargeConstantThreshold = 0;
+
+    % Expert fix #5: multi-core Cortex-A53
+    cfg.EnableOpenMP = true;
 
     codegen -config cfg ...
         -d embeddedDir ...

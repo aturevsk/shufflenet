@@ -4,7 +4,7 @@
  * File: mInvoke_shufflenet_data.h
  *
  * MATLAB Coder version            : 26.1
- * C/C++ source code generated on  : 20-Mar-2026 21:31:49
+ * C/C++ source code generated on  : 22-Mar-2026 12:38:14
  */
 
 #ifndef MINVOKE_SHUFFLENET_DATA_H
@@ -12,11 +12,13 @@
 
 /* Include Files */
 #include "rtwtypes.h"
+#include "omp.h"
 #include <stddef.h>
 #include <stdlib.h>
 
 /* Variable Declarations */
-extern boolean_T isInitialized_mInvoke_shufflenet;
+extern omp_nest_lock_t mInvoke_shufflenet_nestLockGlobal;
+extern bool isInitialized_mInvoke_shufflenet;
 
 #endif
 /*

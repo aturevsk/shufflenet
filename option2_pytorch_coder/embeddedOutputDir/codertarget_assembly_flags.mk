@@ -1,0 +1,3 @@
+ASFLAGS_ADDITIONAL = 
+STACK_SIZE = 200000
+TARGET_PKG_INSTALLDIR = /Applications/MATLAB_R2026a.app/toolbox/rpib/raspiML

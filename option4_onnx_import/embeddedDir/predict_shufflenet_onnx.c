@@ -4,12 +4,14 @@
  * File: predict_shufflenet_onnx.c
  *
  * MATLAB Coder version            : 26.1
- * C/C++ source code generated on  : 20-Mar-2026 21:50:48
+ * C/C++ source code generated on  : 22-Mar-2026 12:35:57
  */
 
 /* Include Files */
 #include "predict_shufflenet_onnx.h"
 #include "callPredict.h"
+#include "predict_shufflenet_onnx_data.h"
+#include "predict_shufflenet_onnx_initialize.h"
 
 /* Function Definitions */
 /*
@@ -31,7 +33,11 @@
  */
 void predict_shufflenet_onnx(const float in[150528], float out[1000])
 {
-  /*    Copyright 2026. Generated for ARM Cortex-A embedded deployment. */
+  if (!isInitialized_predict_shufflenet_onnx) {
+    predict_shufflenet_onnx_initialize();
+  }
+  /*    Copyright 2026. Generated for ARM Cortex-A embedded platform deployment.
+   */
   /*  Wrap as dlarray for network that expects SSCB format */
   predict(in, out);
 }

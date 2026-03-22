@@ -34,3 +34,16 @@ Thumbs.db
 # Claude internal
 .claude/
 *.onnx.data
+# Generated artifacts
+*.o
+*.bin
+*.mex*
+*.mldatx
+bench_opt*
+bench_main*
+buildInfo.mat
+compileInfo.mat
+codedescriptor.dmr
+codertarget_assembly_flags.mk
+rtw_proj.tmw
+_clang-format

@@ -4,7 +4,7 @@
  * File: _coder_mInvoke_shufflenet_info.c
  *
  * MATLAB Coder version            : 26.1
- * C/C++ source code generated on  : 20-Mar-2026 21:31:49
+ * C/C++ source code generated on  : 22-Mar-2026 12:38:14
  */
 
 /* Include Files */
@@ -24,30 +24,30 @@ static const mxArray *c_emlrtMexFcnResolvedFunctionsI(void)
 {
   const mxArray *nameCaptureInfo;
   const char_T *data[7] = {
-      "789ced57cd6ed34010de44699a4a6d0995401c73478a45105239704a5a08526984931651"
-      "21c772368db1bd76d67694f4d43b077ae40de0c80b203872032e880b"
-      "12471e8007203f5ec71eb2da9052172a465aadbf7cb3f3cdfe64568b52d59d1442681d4d"
-      "cc599df46b01ce077d1ac50df229e0978abba32594898d63fcf3a0d7",
-      "6ce2e1be370144b5703852278eefd5070e76878062d7367bb83566daba89ebba85e52878"
-      "3042d676840ac1881a7d973b583364df42b4e34e3334a3205c8f2667"
-      "be19c17a4083eb01fd985e7f413d167f43a0c778ab4a7ab68115b7e3b7db2626d88be7f1"
-      "85a37319c4853aa920d39df2ae3cc1d931763daa9343f13c19461c3e",
-      "0b74a13ee3af4d7ffa9a0efca24d34cf79d79b72f2c803fe60eb89d470317525951a6a4b"
-      "1f783ec53dd7d00752c5d67c0b13cf95caa6eab7b0541bd46daa7594"
-      "aae5d8d4534a921c6e92643b9e6e9392e20cbcb18f66b730957eddcda235d1159de34b73"
-      "ce93b7de6b2837ee3fff78a327a9b77fe76531493d66e7a577daba70",
-      "95a39707fcde53a2df37b6efde6c18ddc651fd31b9256bf5ca348f9a40479407e2e0a4e2"
-      "3739e3cfaa9e27ad7751eb36fb6679bce3e8ccfb7f503879e4017fd0"
-      "f833757b5a9915dc1fd1b85574bc5262f5847c4ab63e7f78fbec7a927accfed5fa7c85a3"
-      "9707fc917bbbfb70abd2e8b6f7345fbe413cbbb4db4017a73ebfcecd",
-      "1ebf3267fc5a6e76fc34e01178f7149667c79df7ddc33b2fecddb302788659bd65c6f239"
-      "c9ced6fbfd3a1e8f337affec53d571305594885e81a327dad765e0c7"
-      "dbd77ba9d9e345fbfa5d103f0dfc32c16f9bc3f668d88e87edfdb07d8cb4d11da9924178"
-      "b7f10cee3dd3670d62981b1c27fa9ea517f5fb16c1eb8067f845d02f",
-      "5af7e07e42ff4dc0c3f73eebd97dee221d1174884c8463791e9f32cf0cc0d0bf20c89359"
-      "58d738e75374fe79f387f11dc1785e7c51dd64f5e56fd76f72e2af0a"
-      "f445ebbbc4b98fffefe7d9eae716ace72cde2b4efc34e0e13d7dc2897b5ef734b39fc2fc"
-      "dba2",
+      "789ced57bd6fd340143f47699a4a6d092010630636a45a44152a03034a521189d2a849a0"
+      "52855ccbb93426feead90e71a6ee0c544cfc098cac0c7c8c6cc0c682"
+      "c4c89f419cf81cfbe1d38594ba50f1a4d3f997dfbbf77bf791773a24d4b60484d02a9a98"
+      "b53ce957025c08fa0c8a1be405e027c4ddd102cac6c651fe79d02ba6",
+      "e1e081330186ace370a46a58aed3f42c6c8f00c1b6a9f5717bcc74540d37551d37a2e081"
+      "8ff4cd0815029ff2bfcb5dacf41aae8e48d79e66a84541b81efb8cf9"
+      "6639eb010dae07f4a37a8339f568fc4b1c3dcaeb35a36ff6b06477dd4e47c30676e2797c"
+      "65e85c0471a18e1064ba55de6e4c706e8c6d87a8c6017f9e1423069f",
+      "03ba509ff2d7a63f7dcb047ed1c69be7aceb4d18791400bf577d2cb66c4c6c51263db9ad"
+      "7a8e4b70dfeea99e58311557c786638b654d76db58ac7b4d93285da9"
+      "a65b2671a492d8083749342d47358d926479ced84731db9888bfeee69a3ed1e59de30b33"
+      "ce93b5de2b283feeedebefd434f55edc7973394d3d6a67a577d2ba70",
+      "95a157003c29dd529eeef49f54ef92f5d6fab0b73bbc5f5137a779d4393abc3c1003a715"
+      "7f9f31feb4ea79da7ae7b56ed36f9ac70786ceacff0789914701f07b"
+      "ad3f53b7a79559c2039fc6ed35cb29a5564f8c2f6f53adcf9fde3fbb91a61eb57fb53e5f"
+      "61e815003fb46f1fee542badc3ce43c56ddc341cb3b4dd42e7a73ebf",
+      "ce278f5f9a317e3d9f1c3f037804de3dc5c5e4b8b3be7b58e785be7b96004f31adb7d468"
+      "3ec7b964bddfafe3f138fefbe711912d0b13498ae815197abc7d5d04"
+      "7eac7dbd27248fe7edeb0f4efc0cf0cb06bf6d8cdaeea81d8ddac751fb1c69fe1d291b5e"
+      "78b7b10cee3dd5a70d62981b1cc7fb4ed28bfa7d8fe055c053fc32e8",
+      "e7ad7b703fa1ff06e0e17b9ff6f43eb7918a0c7480348463791e9d30cf2cc0d0bfc8c993"
+      "5a58d718e79377fe59f387f12dce78567c5edda4f5e56fd7df67c45f"
+      "e6e8f3d67781711fffdfcfd3d5cfcf59cf69bc578cf819c0c37bfa9811f7acee696a3f01"
+      "2087da88",
       ""};
   nameCaptureInfo = NULL;
   emlrtNameCaptureMxArrayR2016a(&data[0], 5448U, &nameCaptureInfo);
@@ -103,7 +103,7 @@ mxArray *emlrtMexFcnProperties(void)
                     "/Users/arkadiyturevskiy/Documents/Claude/PyTorch_Import_2/"
                     "Shufflenet/option2_pytorch_coder/mInvoke_shufflenet.m"));
   emlrtSetField(xEntryPoints, 0, "TimeStamp",
-                emlrtMxCreateDoubleScalar(740061.8965509259));
+                emlrtMxCreateDoubleScalar(740062.0376273148));
   emlrtSetField(xEntryPoints, 0, "Visible", emlrtMxCreateLogicalScalar(true));
   xResult =
       emlrtCreateStructMatrix(1, 1, 7, (const char_T **)&propFieldName[0]);
@@ -113,7 +113,7 @@ mxArray *emlrtMexFcnProperties(void)
   emlrtSetField(xResult, 0, "ResolvedFunctions",
                 (mxArray *)c_emlrtMexFcnResolvedFunctionsI());
   emlrtSetField(xResult, 0, "Checksum",
-                emlrtMxCreateString("bwEmuP78FPXF6sjSFaBcIH"));
+                emlrtMxCreateString("DkcwBpdqaqMKjKc6nN3Q0C"));
   emlrtSetField(xResult, 0, "EntryPoints", xEntryPoints);
   emlrtSetField(xResult, 0, "AuxData",
                 emlrtMxCreateRowVectorUINT8((const uint8_T *)&v, 216U));

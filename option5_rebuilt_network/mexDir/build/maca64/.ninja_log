@@ -1,0 +1,20 @@
+# ninja log v7
+0	64	1774197689350628695	build/maca64/rt_nonfinite.o	c78f2bbea655185
+0	67	1774197689350443236	build/maca64/predict_shufflenet_v5_data.o	98cc31ab1e09b1c3
+1	69	1774197689351576987	build/maca64/ChannelSplitLayer.o	157f74ca6cc131f3
+2	69	1774197689351879779	build/maca64/_coder_predict_shufflenet_v5_api.o	263cd26a3d084e13
+1	69	1774197689350870445	build/maca64/predict_shufflenet_v5_terminate.o	db95165a1bcae8b9
+1	70	1774197689351332321	build/maca64/cat.o	f165a9bb3cb4b8a3
+0	71	1774197689350753778	build/maca64/predict_shufflenet_v5_initialize.o	5c3d6ccca2137989
+1	71	1774197689351728446	build/maca64/FullyConnectedLayer.o	d138e26b2b2ab0bd
+2	76	1774197689352032821	build/maca64/_coder_predict_shufflenet_v5_mex.o	dc287712554e6406
+3	76	1774197689352902281	build/maca64/addBiasApplyActivation.o	84ca65c0686c5c53
+1	78	1774197689351447237	build/maca64/ChannelShuffleLayer.o	23a5ddd9450a5b51
+1	78	1774197689350982445	build/maca64/predict_shufflenet_v5.o	6471f99e092c99ff
+1	83	1774197689351212654	build/maca64/callPredict.o	315fa7f897458f15
+2	94	1774197689352703364	build/maca64/poolingOperation.o	eaa7b1394f4911e6
+3	95	1774197689353078698	build/maca64/predict_shufflenet_v5_mexutil.o	e4d6db6b5a804218
+67	99	1774197689417825435	build/maca64/c_mexapi_version.o	69a7f3729e801564
+64	101	1774197689414724015	build/maca64/_coder_predict_shufflenet_v5_info.o	31ef03cabf3e865a
+1	548	1774197689351102779	build/maca64/conv2dDirectOptimizedColMajor.o	71d931ff9ac94f03
+548	581	1774197689898374157	predict_shufflenet_v5_mex.mexmaca64	2c9334918d6e2064

@@ -4,7 +4,7 @@
  * File: permute.c
  *
  * MATLAB Coder version            : 26.1
- * C/C++ source code generated on  : 20-Mar-2026 21:50:48
+ * C/C++ source code generated on  : 22-Mar-2026 12:35:57
  */
 
 /* Include Files */

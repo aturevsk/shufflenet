@@ -47,21 +47,35 @@ if ~isfolder(outputDir); mkdir(outputDir); end
 embeddedDir = fullfile(outputDir, 'embedded_libfree');
 if ~isfolder(embeddedDir); mkdir(embeddedDir); end
 
-% Configure Embedded Coder (library-free)
+% Configure Embedded Coder with expert-reviewed settings
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
 cfg.GenerateReport = true;
 cfg.GenCodeOnly = true;
 
+% Deep learning config (library-free)
 dlcfg = coder.DeepLearningConfig('none');
 cfg.DeepLearningConfig = dlcfg;
 
+% Expert fix #1: NEON SIMD intrinsics (property of cfg, not dlcfg)
+cfg.InstructionSetExtensions = 'Neon v7';
+
+% Target hardware: Raspberry Pi (expert fix #2)
+try
+    cfg.Hardware = coder.hardware('Raspberry Pi');
+catch
+    fprintf('  (Raspberry Pi support package not installed, using GenCodeOnly)\n');
+end
+
 cfg.EnableMemcpy = true;
 cfg.MemcpyThreshold = 64;
-cfg.EnableOpenMP = false;
+cfg.EnableOpenMP = true;           % Expert fix #5: multi-core Cortex-A53
+cfg.LargeConstantThreshold = 0;   % Expert fix #4: weights in binary files
 cfg.SupportNonFinite = false;
 cfg.BuildConfiguration = 'Faster Runs';
 cfg.PurelyIntegerCode = false;
+
+fprintf('  SIMD: NEON v7 | OpenMP: ON | Weights: binary files\n');
 
 % Input spec: [224 x 224 x 3 x 1] single
 inputArg = coder.typeof(single(0), [224, 224, 3, 1], [false, false, false, false]);

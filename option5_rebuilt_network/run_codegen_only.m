@@ -7,9 +7,22 @@ inputType = coder.typeof(single(0), [224 224 3 1]);
 
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
-cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 cfg.GenerateReport = true;
 cfg.GenCodeOnly = true;
+
+% Expert-reviewed performance settings
+dlcfg = coder.DeepLearningConfig('none');
+cfg.DeepLearningConfig = dlcfg;
+cfg.InstructionSetExtensions = 'Neon v7';  % Expert fix #1: NEON SIMD (on cfg, not dlcfg)
+cfg.EnableOpenMP = true;           % Expert fix #5: multi-core Cortex-A53
+cfg.LargeConstantThreshold = 0;   % Expert fix #4: weights in binary files
+
+% Target hardware (expert fix #2)
+try
+    cfg.Hardware = coder.hardware('Raspberry Pi');
+catch
+    fprintf('  (Raspberry Pi support not installed, using GenCodeOnly)\n');
+end
 
 try
     tStart = tic;

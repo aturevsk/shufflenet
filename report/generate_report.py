@@ -360,7 +360,10 @@ def build_report(output_path):
         "Create entry-point: out = net.invoke(input) with %#codegen pragma",
         "Generate MEX for host validation and verify numerical accuracy",
         "Configure Embedded Coder: coder.config('lib', 'ecoder', true)",
-        "Set hardware target: cfg.Hardware = coder.hardware('ARM Cortex-A')",
+        "Set hardware: cfg.Hardware = coder.hardware('Raspberry Pi')",
+        "Enable NEON SIMD: cfg.InstructionSetExtensions = 'Neon v7'",
+        "Enable OpenMP: cfg.EnableOpenMP = true (quad-core A53)",
+        "Set cfg.LargeConstantThreshold = 0 (weights in binary files)",
         "Generate embedded C code with codegen command",
     ]
     for i, s in enumerate(steps_2, 1):
@@ -646,6 +649,47 @@ def build_report(output_path):
     ]
     for b in why_5:
         story.append(Paragraph(f"<bullet>&bull;</bullet> {b}", styles['BulletItem']))
+    story.append(PageBreak())
+
+    # ── 8b. EXPERT REVIEW FIXES ────────────────────────────────────
+    story.append(Paragraph("8b. Expert Review: Coder Configuration Corrections", styles['SectionHead']))
+    story.append(Paragraph(
+        "A MathWorks expert reviewed the initial MATLAB Coder configuration and identified "
+        "five issues affecting performance and correctness. All scripts (Options 2-5) have "
+        "been updated accordingly.",
+        styles['BodyText2']
+    ))
+    expert_fixes = [
+        ['#', 'Issue', 'Before (incorrect)', 'After (fixed)'],
+        ['1', 'No SIMD/NEON intrinsics',
+         'InstructionSetExtensions not set',
+         "cfg.InstructionSetExtensions = 'Neon v7'"],
+        ['2', 'Invalid hardware name',
+         "coder.hardware('ARM Cortex-A embedded platform')",
+         "coder.hardware('Raspberry Pi')"],
+        ['3', 'MEX not using SIMD',
+         'SIMDAcceleration not set on MEX config',
+         "mexCfg.SIMDAcceleration = 'full'"],
+        ['4', 'Weights hardcoded in C',
+         'LargeConstantThreshold at default (weights in .c, ~63K lines)',
+         'cfg.LargeConstantThreshold = 0 (weights in .bin files, C ~8K lines)'],
+        ['5', 'OpenMP disabled',
+         'EnableOpenMP = false',
+         'EnableOpenMP = true (Cortex-A53 is quad-core)'],
+    ]
+    story.append(make_table(expert_fixes[0], expert_fixes[1:],
+                            col_widths=[0.3*inch, 1.3*inch, 2.2*inch, 2.7*inch]))
+    story.append(Spacer(1, 8))
+    story.append(Paragraph(
+        "<b>Key learnings:</b> (a) InstructionSetExtensions is a property of "
+        "coder.EmbeddedCodeConfig (cfg), NOT of coder.DeepLearningConfig (dlcfg) — this is "
+        "a common source of confusion. (b) 'ARM Cortex-A embedded platform' is not a valid "
+        "Embedded Coder hardware name; use 'Raspberry Pi' for Cortex-A53 targets. "
+        "(c) Setting LargeConstantThreshold = 0 dramatically reduces C source file size "
+        "because weights are emitted as separate binary .bin files. Both code AND binary "
+        "files are required at runtime and should be included in size comparisons.",
+        styles['BodyText2']
+    ))
     story.append(PageBreak())
 
     # ── 9. COMPARATIVE BENCHMARK ────────────────────────────────────

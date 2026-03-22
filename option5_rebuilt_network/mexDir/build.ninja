@@ -1,0 +1,61 @@
+# CompilerName=clang
+# Mode=optim
+ninja_required_version = 1.3
+
+# Basic folders
+root = .
+builddir = $root/build/maca64
+matlabdir = /Applications/MATLAB_R2026a.app
+startdir = /Users/arkadiyturevskiy/Documents/Claude/PyTorch_Import_2/Shufflenet/option5_rebuilt_network
+
+# Toolchain information
+cc = /usr/bin/xcrun -sdk macosx26.2 clang
+cxx = /usr/bin/xcrun -sdk macosx26.2 clang++
+linker = /usr/bin/xcrun -sdk macosx26.2 clang
+linkerxx = /usr/bin/xcrun -sdk macosx26.2 clang++
+
+cflags =  -fno-common -arch arm64 -mmacosx-version-min=13.3 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -fwrapv -ffp-contract=off  -DMATLAB_MEX_FILE -O2 -DNDEBUG -std=c99 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DMODEL=predict_shufflenet_v5_mex -c -fPIC -Xpreprocessor -fopenmp -I "$matlabdir/toolbox/eml/externalDependency/omp/maca64/include" -DOpenMP_omp_LIBRARY="$matlabdir/sys/os/maca64/libiomp5.dylib" 
+
+cxxflags =  -fno-common -arch arm64 -mmacosx-version-min=13.3 -fexceptions -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -fwrapv -ffp-contract=off  -fobjc-arc -std=c++14 -stdlib=libc++ -DMATLAB_MEX_FILE  -O2 -DNDEBUG -std=c++11 -I "$root" -I "$startdir" -I "$root/interface" -I "$matlabdir/extern/include" -I "." -DMODEL=predict_shufflenet_v5_mex -c -fPIC -Xpreprocessor -fopenmp -I "$matlabdir/toolbox/eml/externalDependency/omp/maca64/include" -DOpenMP_omp_LIBRARY="$matlabdir/sys/os/maca64/libiomp5.dylib" 
+
+ldflags =  -Wl,-twolevel_namespace  -arch arm64 -mmacosx-version-min=13.3 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -bundle   -L"$matlabdir/bin/maca64" -weak-lmx -weak-lmex -weak-lmat -lc++  -Wl,-rpath,@loader_path -o predict_shufflenet_v5_mex.mexmaca64 -L"$matlabdir/bin/maca64" -L"$matlabdir/sys/os/maca64" -lmwblas -lemlrt -lcovrt -lut -lmwmathutil -lomp -fPIC -Wl,-exported_symbols_list,predict_shufflenet_v5.map
+
+ldxxflags =  -Wl,-twolevel_namespace  -arch arm64 -mmacosx-version-min=13.3 -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk -framework Cocoa -bundle  -stdlib=libc++ -L"$matlabdir/bin/maca64" -weak-lmx -weak-lmex -weak-lmat -L"$matlabdir/extern/bin/maca64" -weak-lMatlabDataArray  -Wl,-rpath,@loader_path -o predict_shufflenet_v5_mex.mexmaca64 -L"$matlabdir/bin/maca64" -L"$matlabdir/sys/os/maca64" -lmwblas -lemlrt -lcovrt -lut -lmwmathutil -lomp -fPIC -Wl,-exported_symbols_list,predict_shufflenet_v5.map
+
+linkobjs = 
+
+# Build Rules
+rule cc
+    command = $cc $cflags $in -o $out
+
+rule cxx
+    command = $cxx $cxxflags $in -o $out
+
+rule link
+    command = $linker $in $linkobjs $ldflags
+
+rule linkxx
+    command = $linkerxx $in $linkobjs $ldxxflags
+
+# Build
+build $builddir/predict_shufflenet_v5_data.o : cc $root/predict_shufflenet_v5_data.c
+build $builddir/rt_nonfinite.o : cc $root/rt_nonfinite.c
+build $builddir/predict_shufflenet_v5_initialize.o : cc $root/predict_shufflenet_v5_initialize.c
+build $builddir/predict_shufflenet_v5_terminate.o : cc $root/predict_shufflenet_v5_terminate.c
+build $builddir/predict_shufflenet_v5.o : cc $root/predict_shufflenet_v5.c
+build $builddir/conv2dDirectOptimizedColMajor.o : cc $root/conv2dDirectOptimizedColMajor.c
+build $builddir/callPredict.o : cc $root/callPredict.c
+build $builddir/cat.o : cc $root/cat.c
+build $builddir/ChannelShuffleLayer.o : cc $root/ChannelShuffleLayer.c
+build $builddir/ChannelSplitLayer.o : cc $root/ChannelSplitLayer.c
+build $builddir/FullyConnectedLayer.o : cc $root/FullyConnectedLayer.c
+build $builddir/_coder_predict_shufflenet_v5_api.o : cc $root/interface/_coder_predict_shufflenet_v5_api.c
+build $builddir/_coder_predict_shufflenet_v5_mex.o : cc $root/interface/_coder_predict_shufflenet_v5_mex.c
+build $builddir/poolingOperation.o : cc $root/poolingOperation.c
+build $builddir/addBiasApplyActivation.o : cc $root/addBiasApplyActivation.c
+build $builddir/predict_shufflenet_v5_mexutil.o : cc $root/predict_shufflenet_v5_mexutil.c
+build $builddir/_coder_predict_shufflenet_v5_info.o : cc $root/interface/_coder_predict_shufflenet_v5_info.c
+build $builddir/c_mexapi_version.o : cc $matlabdir/extern/version/c_mexapi_version.c
+
+# Link
+build $root/predict_shufflenet_v5_mex.mexmaca64 : link $builddir/predict_shufflenet_v5_data.o $builddir/rt_nonfinite.o $builddir/predict_shufflenet_v5_initialize.o $builddir/predict_shufflenet_v5_terminate.o $builddir/predict_shufflenet_v5.o $builddir/conv2dDirectOptimizedColMajor.o $builddir/callPredict.o $builddir/cat.o $builddir/ChannelShuffleLayer.o $builddir/ChannelSplitLayer.o $builddir/FullyConnectedLayer.o $builddir/_coder_predict_shufflenet_v5_api.o $builddir/_coder_predict_shufflenet_v5_mex.o $builddir/poolingOperation.o $builddir/addBiasApplyActivation.o $builddir/predict_shufflenet_v5_mexutil.o $builddir/_coder_predict_shufflenet_v5_info.o $builddir/c_mexapi_version.o 

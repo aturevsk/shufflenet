@@ -127,6 +127,7 @@ try
     mexCfg.TargetLang = 'C';
     mexCfg.GenerateReport = true;
     mexCfg.ReportPotentialDifferences = true;
+    mexCfg.SIMDAcceleration = 'full';  % Expert fix #3: SIMD for best MEX perf
 
     % Define input types for code generation
     %   input: single-precision tensor [1 x 3 x 224 x 224]
@@ -194,23 +195,18 @@ try
     % Create Embedded Coder configuration for static library
     cfg = coder.config('lib', 'ecoder', true);
 
-    % Target hardware: configure for ARM Cortex-M (generic)
-    % Note: Use coder.hardware('ARM Cortex-A embedded platform') if the
-    % ARM cross-compilation toolchain is installed.
+    % Target hardware: Raspberry Pi (Cortex-A53 quad-core @ 1.5 GHz)
+    % Expert fix #2: use 'Raspberry Pi' — a valid Embedded Coder hardware name
+    cfg.GenCodeOnly = true;  % Generate code only (no cross-compilation on dev machine)
     try
-        cfg.Hardware = coder.hardware('ARM Cortex-A embedded platform');
-        fprintf('Target hardware: ARM Cortex-A embedded platform\n');
+        cfg.Hardware = coder.hardware('Raspberry Pi');
+        fprintf('Target hardware: Raspberry Pi (Cortex-A53)\n');
     catch
-        fprintf('ARM Cortex-A support package not installed.\n');
-        fprintf('Using generic ARM Cortex-M configuration.\n');
-        % Configure for generic embedded ARM target
-        cfg.GenCodeOnly = true;
+        fprintf('Raspberry Pi support package not installed.\n');
+        fprintf('Using generic embedded configuration.\n');
     end
-    fprintf('  Target: ARM Cortex-A53 (ARM Cortex-A embedded platform)\n');
-    fprintf('  Flash: 1 MB + 16 MB QSPI\n');
-    fprintf('  RAM: 340 KB SRAM + 8 MB SDRAM\n');
 
-    % Code generation settings optimized for embedded
+    % Code generation settings optimized for ARM Cortex-A53
     cfg.TargetLang = 'C';
     cfg.GenerateReport = true;
     cfg.ReportPotentialDifferences = true;
@@ -218,8 +214,21 @@ try
     % Memory optimization settings
     cfg.EnableMemcpy = true;
     cfg.MemcpyThreshold = 64;
-    cfg.EnableOpenMP = false; % Single-core Cortex-A53
     cfg.SupportNonFinite = false; % Save code size
+
+    % Expert fix #5: Enable OpenMP — Cortex-A53 is quad-core
+    cfg.EnableOpenMP = true;
+    fprintf('  OpenMP: ENABLED (quad-core Cortex-A53)\n');
+
+    % Expert fix #1: Enable NEON SIMD intrinsics for ARM
+    % InstructionSetExtensions is a property of coder.EmbeddedCodeConfig (cfg),
+    % NOT of coder.DeepLearningConfig (dlcfg)
+    cfg.InstructionSetExtensions = 'Neon v7';
+    fprintf('  SIMD: NEON v7 intrinsics enabled\n');
+
+    % Expert fix #4: Emit weights as separate binary files
+    cfg.LargeConstantThreshold = 0;
+    fprintf('  LargeConstantThreshold: 0 (weights in binary files)\n');
 
     % Optimization settings for embedded
     cfg.BuildConfiguration = 'Faster Runs';
@@ -229,8 +238,6 @@ try
     cfg.SaturateOnIntegerOverflow = false;
 
     fprintf('  Build configuration: Faster Runs\n');
-    fprintf('  OpenMP: disabled (single-core target)\n');
-    fprintf('  Non-finite support: disabled (code size optimization)\n');
 
 catch ME
     fprintf(2, 'ERROR: Failed to configure Embedded Coder.\n');
@@ -336,9 +343,8 @@ try
     fprintf('Code generation workflow complete.\n');
     fprintf('Next steps:\n');
     fprintf('  1. Review the code generation report\n');
-    fprintf('  2. Open the generated project in ARM Cortex-ACubeIDE\n');
-    fprintf('  3. Configure memory sections for weights (Flash) and activations (SDRAM)\n');
-    fprintf('  4. Build and flash to ARM Cortex-A embedded platform\n');
+    fprintf('  2. Cross-compile with aarch64-linux-gnu-gcc for Raspberry Pi\n');
+    fprintf('  3. Deploy and benchmark on target hardware\n');
     fprintf('=============================================================\n');
 
 catch ME

@@ -4,7 +4,7 @@
  * File: callPredict.c
  *
  * MATLAB Coder version            : 26.1
- * C/C++ source code generated on  : 20-Mar-2026 21:50:48
+ * C/C++ source code generated on  : 22-Mar-2026 12:35:57
  */
 
 /* Include Files */
@@ -12,58 +12,194 @@
 #include "Shape_To_SliceLayer1000.h"
 #include "Shape_To_SliceLayer1004.h"
 #include "Shape_To_SliceLayer1012.h"
+#include "cat.h"
 #include "conv2dDirectOptimizedColMajor.h"
 #include "mean.h"
 #include "permute.h"
+#include "pool.h"
 #include "predict_shufflenet_onnx_rtwutil.h"
-#include <math.h>
+#include "omp.h"
+#include <arm_neon.h>
 #include <string.h>
 
 /* Type Definitions */
-#ifndef typedef_cell_wrap_10
-#define typedef_cell_wrap_10
+#ifndef typedef_cell_wrap_11
+#define typedef_cell_wrap_11
 typedef struct {
   float f1[45472];
-} cell_wrap_10;
-#endif /* typedef_cell_wrap_10 */
+} cell_wrap_11;
+#endif /* typedef_cell_wrap_11 */
 
-#ifndef typedef_cell_wrap_13
-#define typedef_cell_wrap_13
+#ifndef typedef_cell_wrap_14
+#define typedef_cell_wrap_14
 typedef struct {
   float f1[22736];
-} cell_wrap_13;
-#endif /* typedef_cell_wrap_13 */
+} cell_wrap_14;
+#endif /* typedef_cell_wrap_14 */
 
-#ifndef typedef_cell_wrap_15
-#define typedef_cell_wrap_15
+#ifndef typedef_cell_wrap_16
+#define typedef_cell_wrap_16
 typedef struct {
   float f1[11368];
-} cell_wrap_15;
-#endif /* typedef_cell_wrap_15 */
+} cell_wrap_16;
+#endif /* typedef_cell_wrap_16 */
 
 /* Function Declarations */
-static void c_matrixMultiply472939278431058(int M, int K, int N, int blockSizeM,
+static void b_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor);
+
+static void b_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor);
+
+static void c_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor);
+
+static void c_matrixMultiply509232298252315(int M, int K, int N, int blockSizeM,
                                             int blockSizeK, int blockSizeN,
                                             const float *A, const float *B,
                                             float *C);
 
+static void c_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor);
+
+static void d_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor);
+
+static void d_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor);
+
 static int div_nde_s32_floor(void);
 
-static int div_s32_floor(void);
+static int div_s32_floor(int numerator, int denominator);
 
-static void macroKernel4729392784310587909(int M, int K, int N, const float *A,
+static void e_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor);
+
+static void e_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor);
+
+static void f_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor);
+
+static void f_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor);
+
+static void fromBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor);
+
+static void macroKernel5092322982523156551(int M, int K, int N, const float *A,
                                            int LDA, const float *B, int LDB,
                                            float *C, int LDC);
 
-static void microKernel2286682761447055448(int K, const float *A, int LDA,
+static void microKernel16179624166335670025(int K, const float *A, int LDA,
+                                            const float *B, int LDB, float *C,
+                                            int LDC);
+
+static void microKernel4474929121922715983(int K, const float *A, int LDA,
                                            const float *B, int LDB, float *C,
                                            int LDC);
 
-static void microKernel3584402356226862004(int K, const float *A, int LDA,
-                                           const float *B, int LDB, float *C,
-                                           int LDC);
+static void microKernel564510748923505135(int K, const float *A, int LDA,
+                                          const float *B, int LDB, float *C,
+                                          int LDC);
+
+static void toBlockedLayoutTransform(const float *inputTensor,
+                                     float *outputTensor);
 
 /* Function Definitions */
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void b_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int outputTensorBaseIdx;
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, outputTensorBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 11368; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 11368;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 196U);
+    fusedBlockIdx %= 196;
+    outputTensorBaseIdx = blockIdx * 784 + fusedBlockIdx;
+    fusedBlockIdx = blockIdx * 784 + (fusedBlockIdx << 2);
+    outputTensor[outputTensorBaseIdx] = inputTensor[fusedBlockIdx];
+    outputTensor[outputTensorBaseIdx + 196] = inputTensor[fusedBlockIdx + 1];
+    outputTensor[outputTensorBaseIdx + 392] = inputTensor[fusedBlockIdx + 2];
+    outputTensor[outputTensorBaseIdx + 588] = inputTensor[fusedBlockIdx + 3];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void b_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputChannelBlockBaseIdx;
+  int inputWidthIdx;
+  memset(outputTensor, 0, (unsigned int)((int)sizeof(float) * 90944));
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, inputWidthIdx, inputChannelBlockBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 22736; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 22736;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 784U);
+    fusedBlockIdx %= 784;
+    inputWidthIdx = (int)((unsigned int)fusedBlockIdx / 28U);
+    fusedBlockIdx %= 28;
+    inputChannelBlockBaseIdx =
+        (fusedBlockIdx + inputWidthIdx * 28) + blockIdx * 3136;
+    fusedBlockIdx =
+        ((fusedBlockIdx << 2) + inputWidthIdx * 112) + blockIdx * 3136;
+    outputTensor[fusedBlockIdx] = inputTensor[inputChannelBlockBaseIdx];
+    outputTensor[fusedBlockIdx + 1] =
+        inputTensor[inputChannelBlockBaseIdx + 784];
+    outputTensor[fusedBlockIdx + 2] =
+        inputTensor[inputChannelBlockBaseIdx + 1568];
+    outputTensor[fusedBlockIdx + 3] =
+        inputTensor[inputChannelBlockBaseIdx + 2352];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void c_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int outputTensorBaseIdx;
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, outputTensorBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 5684; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 5684;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 196U);
+    fusedBlockIdx %= 196;
+    outputTensorBaseIdx = blockIdx * 784 + fusedBlockIdx;
+    fusedBlockIdx = blockIdx * 784 + (fusedBlockIdx << 2);
+    outputTensor[outputTensorBaseIdx] = inputTensor[fusedBlockIdx];
+    outputTensor[outputTensorBaseIdx + 196] = inputTensor[fusedBlockIdx + 1];
+    outputTensor[outputTensorBaseIdx + 392] = inputTensor[fusedBlockIdx + 2];
+    outputTensor[outputTensorBaseIdx + 588] = inputTensor[fusedBlockIdx + 3];
+  }
+}
+
 /*
  * Arguments    : int M
  *                int K
@@ -76,20 +212,24 @@ static void microKernel3584402356226862004(int K, const float *A, int LDA,
  *                float *C
  * Return Type  : void
  */
-static void c_matrixMultiply472939278431058(int M, int K, int N, int blockSizeM,
+static void c_matrixMultiply509232298252315(int M, int K, int N, int blockSizeM,
                                             int blockSizeK, int blockSizeN,
                                             const float *A, const float *B,
                                             float *C)
 {
+  const float *ptrB;
+  int b_i;
   int b_j1;
+  int i;
   int i0;
-  int i0_ub_tmp;
+  int i0_ub;
   int k0;
+  int k0_ub;
   memset(C, 0, (unsigned int)(M * N * (int)sizeof(float)));
   if (blockSizeM >= M) {
     blockSizeM = M;
   } else {
-    blockSizeM = div_nde_s32_floor() * 7;
+    blockSizeM = div_nde_s32_floor() * 28;
     if (blockSizeM <= 0) {
       blockSizeM = 1;
     }
@@ -99,7 +239,8 @@ static void c_matrixMultiply472939278431058(int M, int K, int N, int blockSizeM,
   } else if (blockSizeN <= 0) {
     blockSizeN = 1;
   }
-  i0_ub_tmp = div_s32_floor() + 1;
+  i0_ub = div_s32_floor(M - 1, blockSizeM) + 1;
+  k0_ub = div_s32_floor(K - 1, blockSizeK) + 1;
   for (b_j1 = 0; b_j1 < N; b_j1 += blockSizeN) {
     int N2;
     if (b_j1 > N - blockSizeN) {
@@ -107,7 +248,7 @@ static void c_matrixMultiply472939278431058(int M, int K, int N, int blockSizeM,
     } else {
       N2 = blockSizeN;
     }
-    for (k0 = 1; k0 <= i0_ub_tmp; k0++) {
+    for (k0 = 1; k0 <= k0_ub; k0++) {
       int K2;
       int k;
       k = (k0 - 1) * blockSizeK;
@@ -116,20 +257,122 @@ static void c_matrixMultiply472939278431058(int M, int K, int N, int blockSizeM,
       } else {
         K2 = blockSizeK;
       }
-      for (i0 = 1; i0 <= i0_ub_tmp; i0++) {
-        int b_i;
-        int i;
+      ptrB = &B[k + K * b_j1];
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(i, b_i)
+
+      for (i0 = 1; i0 <= i0_ub; i0++) {
         i = (i0 - 1) * blockSizeM;
         if (i > M - blockSizeM) {
           b_i = M - i;
         } else {
           b_i = blockSizeM;
         }
-        macroKernel4729392784310587909(b_i, K2, N2, &A[i + M * k], M,
-                                       &B[k + K * b_j1], K, &C[i + M * b_j1],
-                                       M);
+        macroKernel5092322982523156551(b_i, K2, N2, &A[i + M * k], M, ptrB, K,
+                                       &C[i + M * b_j1], M);
       }
     }
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void c_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputChannelBlockBaseIdx;
+  int inputWidthIdx;
+  memset(outputTensor, 0, (unsigned int)((int)sizeof(float) * 22736));
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, inputWidthIdx, inputChannelBlockBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 5684; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 5684;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 196U);
+    fusedBlockIdx %= 196;
+    inputWidthIdx = (int)((unsigned int)fusedBlockIdx / 14U);
+    fusedBlockIdx %= 14;
+    inputChannelBlockBaseIdx =
+        (fusedBlockIdx + inputWidthIdx * 14) + blockIdx * 784;
+    fusedBlockIdx =
+        ((fusedBlockIdx << 2) + inputWidthIdx * 56) + blockIdx * 784;
+    outputTensor[fusedBlockIdx] = inputTensor[inputChannelBlockBaseIdx];
+    outputTensor[fusedBlockIdx + 1] =
+        inputTensor[inputChannelBlockBaseIdx + 196];
+    outputTensor[fusedBlockIdx + 2] =
+        inputTensor[inputChannelBlockBaseIdx + 392];
+    outputTensor[fusedBlockIdx + 3] =
+        inputTensor[inputChannelBlockBaseIdx + 588];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void d_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int outputTensorBaseIdx;
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, outputTensorBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 5684; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 5684;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 49U);
+    fusedBlockIdx %= 49;
+    outputTensorBaseIdx = blockIdx * 196 + fusedBlockIdx;
+    fusedBlockIdx = blockIdx * 196 + (fusedBlockIdx << 2);
+    outputTensor[outputTensorBaseIdx] = inputTensor[fusedBlockIdx];
+    outputTensor[outputTensorBaseIdx + 49] = inputTensor[fusedBlockIdx + 1];
+    outputTensor[outputTensorBaseIdx + 98] = inputTensor[fusedBlockIdx + 2];
+    outputTensor[outputTensorBaseIdx + 147] = inputTensor[fusedBlockIdx + 3];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void d_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputChannelBlockBaseIdx;
+  int inputWidthIdx;
+  memset(outputTensor, 0, (unsigned int)((int)sizeof(float) * 45472));
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, inputWidthIdx, inputChannelBlockBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 11368; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 11368;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 196U);
+    fusedBlockIdx %= 196;
+    inputWidthIdx = (int)((unsigned int)fusedBlockIdx / 14U);
+    fusedBlockIdx %= 14;
+    inputChannelBlockBaseIdx =
+        (fusedBlockIdx + inputWidthIdx * 14) + blockIdx * 784;
+    fusedBlockIdx =
+        ((fusedBlockIdx << 2) + inputWidthIdx * 56) + blockIdx * 784;
+    outputTensor[fusedBlockIdx] = inputTensor[inputChannelBlockBaseIdx];
+    outputTensor[fusedBlockIdx + 1] =
+        inputTensor[inputChannelBlockBaseIdx + 196];
+    outputTensor[fusedBlockIdx + 2] =
+        inputTensor[inputChannelBlockBaseIdx + 392];
+    outputTensor[fusedBlockIdx + 3] =
+        inputTensor[inputChannelBlockBaseIdx + 588];
   }
 }
 
@@ -139,16 +382,184 @@ static void c_matrixMultiply472939278431058(int M, int K, int N, int blockSizeM,
  */
 static int div_nde_s32_floor(void)
 {
-  return 18;
+  return 2;
 }
 
 /*
- * Arguments    : void
+ * Arguments    : int numerator
+ *                int denominator
  * Return Type  : int
  */
-static int div_s32_floor(void)
+static int div_s32_floor(int numerator, int denominator)
 {
-  return 7;
+  return (int)((unsigned int)numerator / (unsigned int)denominator);
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void e_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int outputTensorBaseIdx;
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, outputTensorBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 2842; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 2842;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 49U);
+    fusedBlockIdx %= 49;
+    outputTensorBaseIdx = blockIdx * 196 + fusedBlockIdx;
+    fusedBlockIdx = blockIdx * 196 + (fusedBlockIdx << 2);
+    outputTensor[outputTensorBaseIdx] = inputTensor[fusedBlockIdx];
+    outputTensor[outputTensorBaseIdx + 49] = inputTensor[fusedBlockIdx + 1];
+    outputTensor[outputTensorBaseIdx + 98] = inputTensor[fusedBlockIdx + 2];
+    outputTensor[outputTensorBaseIdx + 147] = inputTensor[fusedBlockIdx + 3];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void e_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputChannelBlockBaseIdx;
+  int inputWidthIdx;
+  memset(outputTensor, 0, (unsigned int)((int)sizeof(float) * 11368));
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, inputWidthIdx, inputChannelBlockBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 2842; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 2842;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 49U);
+    fusedBlockIdx %= 49;
+    inputWidthIdx = (int)((unsigned int)fusedBlockIdx / 7U);
+    fusedBlockIdx %= 7;
+    inputChannelBlockBaseIdx =
+        (fusedBlockIdx + inputWidthIdx * 7) + blockIdx * 196;
+    fusedBlockIdx =
+        ((fusedBlockIdx << 2) + inputWidthIdx * 28) + blockIdx * 196;
+    outputTensor[fusedBlockIdx] = inputTensor[inputChannelBlockBaseIdx];
+    outputTensor[fusedBlockIdx + 1] =
+        inputTensor[inputChannelBlockBaseIdx + 49];
+    outputTensor[fusedBlockIdx + 2] =
+        inputTensor[inputChannelBlockBaseIdx + 98];
+    outputTensor[fusedBlockIdx + 3] =
+        inputTensor[inputChannelBlockBaseIdx + 147];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void f_fromBlockedLayoutTransform(const float *inputTensor,
+                                         float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int outputTensorBaseIdx;
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, outputTensorBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 12544; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 12544;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 49U);
+    fusedBlockIdx %= 49;
+    outputTensorBaseIdx = blockIdx * 196 + fusedBlockIdx;
+    fusedBlockIdx = blockIdx * 196 + (fusedBlockIdx << 2);
+    outputTensor[outputTensorBaseIdx] = inputTensor[fusedBlockIdx];
+    outputTensor[outputTensorBaseIdx + 49] = inputTensor[fusedBlockIdx + 1];
+    outputTensor[outputTensorBaseIdx + 98] = inputTensor[fusedBlockIdx + 2];
+    outputTensor[outputTensorBaseIdx + 147] = inputTensor[fusedBlockIdx + 3];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void f_toBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputChannelBlockBaseIdx;
+  int inputWidthIdx;
+  memset(outputTensor, 0, (unsigned int)((int)sizeof(float) * 22736));
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, inputWidthIdx, inputChannelBlockBaseIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 5684; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 5684;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 49U);
+    fusedBlockIdx %= 49;
+    inputWidthIdx = (int)((unsigned int)fusedBlockIdx / 7U);
+    fusedBlockIdx %= 7;
+    inputChannelBlockBaseIdx =
+        (fusedBlockIdx + inputWidthIdx * 7) + blockIdx * 196;
+    fusedBlockIdx =
+        ((fusedBlockIdx << 2) + inputWidthIdx * 28) + blockIdx * 196;
+    outputTensor[fusedBlockIdx] = inputTensor[inputChannelBlockBaseIdx];
+    outputTensor[fusedBlockIdx + 1] =
+        inputTensor[inputChannelBlockBaseIdx + 49];
+    outputTensor[fusedBlockIdx + 2] =
+        inputTensor[inputChannelBlockBaseIdx + 98];
+    outputTensor[fusedBlockIdx + 3] =
+        inputTensor[inputChannelBlockBaseIdx + 147];
+  }
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void fromBlockedLayoutTransform(const float *inputTensor,
+                                       float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputTensorBaseIdx;
+  int outputChannelIdx;
+  int outputTensorBaseIdx;
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, outputTensorBaseIdx, inputTensorBaseIdx,      \
+            outputChannelIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 11760; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 11760;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 784U);
+    fusedBlockIdx %= 784;
+    outputTensorBaseIdx = blockIdx * 3136 + fusedBlockIdx;
+    inputTensorBaseIdx = blockIdx * 3136 + (fusedBlockIdx << 2);
+    if (blockIdx == 14) {
+      fusedBlockIdx = 2;
+    } else {
+      fusedBlockIdx = 4;
+    }
+    for (outputChannelIdx = 1; outputChannelIdx <= fusedBlockIdx;
+         outputChannelIdx++) {
+      outputTensor[outputTensorBaseIdx + (outputChannelIdx - 1) * 784] =
+          inputTensor[(inputTensorBaseIdx + outputChannelIdx) - 1];
+    }
+  }
 }
 
 /*
@@ -163,7 +574,7 @@ static int div_s32_floor(void)
  *                int LDC
  * Return Type  : void
  */
-static void macroKernel4729392784310587909(int M, int K, int N, const float *A,
+static void macroKernel5092322982523156551(int M, int K, int N, const float *A,
                                            int LDA, const float *B, int LDB,
                                            float *C, int LDC)
 {
@@ -178,16 +589,23 @@ static void macroKernel4729392784310587909(int M, int K, int N, const float *A,
     idxC = LDC * j;
     i = 0;
     idxA = 0;
-    while (i <= M - 7) {
-      microKernel2286682761447055448(K, &A[idxA], LDA, &B[idxB], LDB, &C[idxC],
+    while (i <= M - 28) {
+      microKernel4474929121922715983(K, &A[idxA], LDA, &B[idxB], LDB, &C[idxC],
                                      LDC);
-      idxA += 7;
-      idxC += 7;
-      i += 7;
+      idxA += 28;
+      idxC += 28;
+      i += 28;
+    }
+    while (i <= M - 4) {
+      microKernel564510748923505135(K, &A[idxA], LDA, &B[idxB], LDB, &C[idxC],
+                                    LDC);
+      idxA += 4;
+      idxC += 4;
+      i += 4;
     }
     while (i <= M - 1) {
-      microKernel3584402356226862004(K, &A[idxA], LDA, &B[idxB], LDB, &C[idxC],
-                                     LDC);
+      microKernel16179624166335670025(K, &A[idxA], LDA, &B[idxB], LDB, &C[idxC],
+                                      LDC);
       idxA++;
       idxC++;
       i++;
@@ -207,66 +625,9 @@ static void macroKernel4729392784310587909(int M, int K, int N, const float *A,
  *                int LDC
  * Return Type  : void
  */
-static void microKernel2286682761447055448(int K, const float *A, int LDA,
-                                           const float *B, int LDB, float *C,
-                                           int LDC)
-{
-  float b_c;
-  float c;
-  float c_c;
-  float d_c;
-  float e_c;
-  float f_c;
-  float g_c;
-  int idxA;
-  int idxB;
-  int k;
-  (void)LDB;
-  (void)LDC;
-  idxA = 0;
-  idxB = 0;
-  c = C[0];
-  b_c = C[1];
-  c_c = C[2];
-  d_c = C[3];
-  e_c = C[4];
-  f_c = C[5];
-  g_c = C[6];
-  for (k = 0; k < K; k++) {
-    float b;
-    b = B[idxB];
-    c += A[idxA] * b;
-    b_c += A[idxA + 1] * b;
-    c_c += A[idxA + 2] * b;
-    d_c += A[idxA + 3] * b;
-    e_c += A[idxA + 4] * b;
-    f_c += A[idxA + 5] * b;
-    g_c += A[idxA + 6] * b;
-    idxA += LDA;
-    idxB++;
-  }
-  C[0] = c;
-  C[1] = b_c;
-  C[2] = c_c;
-  C[3] = d_c;
-  C[4] = e_c;
-  C[5] = f_c;
-  C[6] = g_c;
-}
-
-/*
- * Arguments    : int K
- *                const float *A
- *                int LDA
- *                const float *B
- *                int LDB
- *                float *C
- *                int LDC
- * Return Type  : void
- */
-static void microKernel3584402356226862004(int K, const float *A, int LDA,
-                                           const float *B, int LDB, float *C,
-                                           int LDC)
+static void microKernel16179624166335670025(int K, const float *A, int LDA,
+                                            const float *B, int LDB, float *C,
+                                            int LDC)
 {
   float c;
   int idxA;
@@ -286,320 +647,213 @@ static void microKernel3584402356226862004(int K, const float *A, int LDA,
 }
 
 /*
+ * Arguments    : int K
+ *                const float *A
+ *                int LDA
+ *                const float *B
+ *                int LDB
+ *                float *C
+ *                int LDC
+ * Return Type  : void
+ */
+static void microKernel4474929121922715983(int K, const float *A, int LDA,
+                                           const float *B, int LDB, float *C,
+                                           int LDC)
+{
+  float32x4_t b_c;
+  float32x4_t c;
+  float32x4_t c_c;
+  float32x4_t d_c;
+  float32x4_t e_c;
+  float32x4_t f_c;
+  float32x4_t g_c;
+  int idxA;
+  int idxB;
+  int k;
+  (void)LDB;
+  (void)LDC;
+  idxA = 0;
+  idxB = 0;
+  c = vld1q_f32(&C[0]);
+  b_c = vld1q_f32(&C[4]);
+  c_c = vld1q_f32(&C[8]);
+  d_c = vld1q_f32(&C[12]);
+  e_c = vld1q_f32(&C[16]);
+  f_c = vld1q_f32(&C[20]);
+  g_c = vld1q_f32(&C[24]);
+  for (k = 0; k < K; k++) {
+    float32x4_t b;
+    b = vdupq_n_f32(B[idxB]);
+    c = vaddq_f32(c, vmulq_f32(vld1q_f32(&A[idxA]), b));
+    b_c = vaddq_f32(b_c, vmulq_f32(vld1q_f32(&A[idxA + 4]), b));
+    c_c = vaddq_f32(c_c, vmulq_f32(vld1q_f32(&A[idxA + 8]), b));
+    d_c = vaddq_f32(d_c, vmulq_f32(vld1q_f32(&A[idxA + 12]), b));
+    e_c = vaddq_f32(e_c, vmulq_f32(vld1q_f32(&A[idxA + 16]), b));
+    f_c = vaddq_f32(f_c, vmulq_f32(vld1q_f32(&A[idxA + 20]), b));
+    g_c = vaddq_f32(g_c, vmulq_f32(vld1q_f32(&A[idxA + 24]), b));
+    idxA += LDA;
+    idxB++;
+  }
+  vst1q_f32(&C[0], c);
+  vst1q_f32(&C[4], b_c);
+  vst1q_f32(&C[8], c_c);
+  vst1q_f32(&C[12], d_c);
+  vst1q_f32(&C[16], e_c);
+  vst1q_f32(&C[20], f_c);
+  vst1q_f32(&C[24], g_c);
+}
+
+/*
+ * Arguments    : int K
+ *                const float *A
+ *                int LDA
+ *                const float *B
+ *                int LDB
+ *                float *C
+ *                int LDC
+ * Return Type  : void
+ */
+static void microKernel564510748923505135(int K, const float *A, int LDA,
+                                          const float *B, int LDB, float *C,
+                                          int LDC)
+{
+  float32x4_t c;
+  int idxA;
+  int idxB;
+  int k;
+  (void)LDB;
+  (void)LDC;
+  idxA = 0;
+  idxB = 0;
+  c = vld1q_f32(&C[0]);
+  for (k = 0; k < K; k++) {
+    c = vaddq_f32(c, vmulq_f32(vld1q_f32(&A[idxA]), vdupq_n_f32(B[idxB])));
+    idxA += LDA;
+    idxB++;
+  }
+  vst1q_f32(&C[0], c);
+}
+
+/*
+ * Arguments    : const float *inputTensor
+ *                float *outputTensor
+ * Return Type  : void
+ */
+static void toBlockedLayoutTransform(const float *inputTensor,
+                                     float *outputTensor)
+{
+  int blockIdx;
+  int fusedBlockIdx;
+  int fusedImageIdx;
+  int inputChannelBlockBaseIdx;
+  int inputWidthIdx;
+  int outputChannelIdx;
+  memset(outputTensor, 0, (unsigned int)((int)sizeof(float) * 47040));
+#pragma omp parallel for num_threads(omp_get_max_threads()) private(           \
+        fusedBlockIdx, blockIdx, inputWidthIdx, inputChannelBlockBaseIdx,      \
+            outputChannelIdx)
+
+  for (fusedImageIdx = 0; fusedImageIdx < 11760; fusedImageIdx++) {
+    fusedBlockIdx = fusedImageIdx % 11760;
+    blockIdx = (int)((unsigned int)fusedBlockIdx / 784U);
+    fusedBlockIdx %= 784;
+    inputWidthIdx = (int)((unsigned int)fusedBlockIdx / 28U);
+    fusedBlockIdx %= 28;
+    inputChannelBlockBaseIdx =
+        (fusedBlockIdx + inputWidthIdx * 28) + blockIdx * 3136;
+    inputWidthIdx =
+        ((fusedBlockIdx << 2) + inputWidthIdx * 112) + blockIdx * 3136;
+    if (blockIdx == 14) {
+      fusedBlockIdx = 2;
+    } else {
+      fusedBlockIdx = 4;
+    }
+    for (outputChannelIdx = 1; outputChannelIdx <= fusedBlockIdx;
+         outputChannelIdx++) {
+      outputTensor[(inputWidthIdx + outputChannelIdx) - 1] =
+          inputTensor[inputChannelBlockBaseIdx + (outputChannelIdx - 1) * 784];
+    }
+  }
+}
+
+/*
  * Arguments    : const float inputsT_0_f1[150528]
  *                float outputs_0_f1[1000]
  * Return Type  : void
  */
 void predict(const float inputsT_0_f1[150528], float outputs_0_f1[1000])
 {
-  static cell_wrap_10 outT_f10[2];
-  static cell_wrap_13 outT_f32[2];
-  static cell_wrap_15 outT_f74[2];
-  static const float fv1[1000] = {
-      -1.4248488F,   -2.684802F,   -2.4433744F,  -3.3008127F,  -1.6494964F,
-      -2.7836852F,   -2.3412538F,  -0.7826878F,  -0.90369225F, -1.8625064F,
-      -2.1607728F,   -2.0210853F,  -2.3383758F,  -1.8362944F,  -2.15451F,
-      -1.7259388F,   -1.4122887F,  -1.1793673F,  -1.3700672F,  -2.0209725F,
-      -0.8790287F,   -0.6139951F,  -1.7938925F,  -0.7360504F,  -0.7489246F,
-      -1.9421681F,   -1.365411F,   -2.765361F,   -1.6840227F,  -1.808961F,
-      -2.1645565F,   -1.4948671F,  -1.8368877F,  -2.1874933F,  -2.0785472F,
-      -2.6062903F,   -1.898935F,   -2.5694487F,  -1.4633405F,  -0.81047016F,
-      -1.0431013F,   -0.9116777F,  -1.1348522F,  -1.4233204F,  -1.1305712F,
-      -2.1468987F,   -0.7426221F,  -1.685724F,   -2.716256F,   -1.5585814F,
-      -1.5538033F,   -2.5193286F,  -0.31238753F, -0.8983245F,  0.02606818F,
-      -1.2641915F,   -1.1744177F,  -1.9063027F,  -1.0923928F,  -0.55515534F,
-      -0.9498608F,   -1.5360115F,  -1.8229337F,  -0.99385536F, -1.7581737F,
-      -1.7984164F,   -2.329716F,   -1.540449F,   -2.1565921F,  -2.9634607F,
-      -2.522815F,    -2.13929F,    -1.8520985F,  -1.2614824F,  -2.3677416F,
-      -1.4929554F,   -2.1270034F,  -1.4104328F,  -2.250418F,   -0.9129188F,
-      -1.9098198F,   -2.2698944F,  -1.0062547F,  -3.0806527F,  -1.0995067F,
-      -1.362709F,    -2.08923F,    -1.3569081F,  -1.5396005F,  -1.127773F,
-      -1.65764F,     -1.5559506F,  -1.4064631F,  -1.600192F,   -1.5279529F,
-      -1.8502064F,   -1.1330016F,  -1.2610053F,  -0.41001052F, -1.4056611F,
-      -2.6393657F,   -2.5114472F,  -2.4645634F,  -2.254842F,   -1.3443838F,
-      -1.731237F,    -1.9916198F,  -2.1126747F,  -2.6491888F,  -2.130195F,
-      -3.0867124F,   -0.9380324F,  -1.7886181F,  -2.4991598F,  -0.7916637F,
-      -2.5225627F,   -2.1699133F,  -1.9811728F,  -1.4622489F,  -2.089789F,
-      -2.871828F,    -2.9361339F,  -2.1638882F,  -2.4605358F,  -1.6644236F,
-      -2.7687252F,   -2.2682726F,  -0.6830062F,  -1.9270196F,  -0.848768F,
-      -1.8688011F,   -1.5908983F,  -1.3448081F,  -0.8324833F,  -1.4133999F,
-      -2.2433825F,   -2.1600351F,  -1.8354504F,  -1.6876185F,  -2.6340508F,
-      -3.0631788F,   -2.354587F,   -2.40871F,    -2.4325016F,  -1.6588756F,
-      -1.3317713F,   -1.7017996F,  -2.4704297F,  -2.5057633F,  -2.5304267F,
-      -0.73507905F,  -1.4766085F,  -1.9252784F,  -2.3070676F,  -2.1462703F,
-      -1.9955765F,   -1.4382612F,  -1.6503901F,  -2.0106537F,  -2.0359066F,
-      -1.6229414F,   -1.4820839F,  -0.9381264F,  -1.5812011F,  -1.6029369F,
-      -1.8219F,      -2.249598F,   -2.423285F,   -1.8052807F,  -1.7171F,
-      -1.1690345F,   -1.1620219F,  -1.7777308F,  -1.0695059F,  -0.79917276F,
-      -1.614879F,    -2.0031943F,  -1.8478562F,  -1.0665462F,  -1.6793647F,
-      -1.4692401F,   -2.067752F,   -2.1081579F,  -2.0647528F,  -1.7602391F,
-      -1.2405074F,   -1.9689826F,  -2.192443F,   -1.8388933F,  -1.8683989F,
-      -2.0656786F,   -1.5893445F,  -1.8004699F,  -2.7225845F,  -1.7320769F,
-      -1.4189698F,   -1.8739223F,  -2.0068994F,  -2.859395F,   -1.9389685F,
-      -2.930876F,    -2.5165882F,  -2.3255053F,  -2.2578611F,  -2.2322693F,
-      -0.9605071F,   -1.1501126F,  -1.3480244F,  -1.4938142F,  -1.3710705F,
-      -2.0348313F,   -2.5092113F,  -1.6880592F,  -3.2133026F,  -1.9162365F,
-      -1.9481202F,   -1.7981429F,  -0.8903269F,  -0.41574264F, -1.9089772F,
-      -1.4126943F,   -2.2432246F,  -1.2785957F,  -0.26774257F, -2.122352F,
-      -0.30031052F,  -1.6896384F,  -0.68540967F, -2.756305F,   -1.1966299F,
-      -1.4758375F,   -1.3541926F,  -1.2983385F,  -1.5471408F,  -1.133133F,
-      -1.2356902F,   -1.1873447F,  -2.09295F,    -1.5629439F,  -1.2439313F,
-      -2.2889774F,   -2.2191243F,  -1.5326681F,  -2.2679992F,  -0.968095F,
-      -0.656569F,    -1.1636381F,  -0.6605153F,  -1.350835F,   -0.86184895F,
-      -1.8861047F,   -1.9796771F,  -2.302414F,   -2.4412467F,  -2.457266F,
-      -1.7643038F,   -1.2638842F,  -0.7924777F,  -2.3320382F,  -1.4529254F,
-      -1.2303011F,   -1.658624F,   -1.7183049F,  -1.463941F,   -0.9947037F,
-      -1.7571483F,   -1.2078234F,  -0.99607277F, -1.980965F,   -1.0462039F,
-      -0.5668764F,   -2.015948F,   -1.7743698F,  -1.6899749F,  -1.7470211F,
-      -1.8297379F,   -0.95683783F, -1.3618191F,  -2.3558187F,  -1.4415486F,
-      -2.054062F,    -0.368778F,   -1.9864883F,  -2.9040782F,  -0.80458033F,
-      -1.4113384F,   -1.5071588F,  -1.830637F,   -2.3616858F,  -1.7055585F,
-      -2.2275264F,   -2.0710344F,  -1.9285825F,  -2.6245208F,  -0.6053705F,
-      -0.2109165F,   -1.8620917F,  -0.82383525F, -2.0513425F,  -1.724539F,
-      -2.4738686F,   -2.2565494F,  -1.9617747F,  -1.7029258F,  -1.954586F,
-      -1.1423774F,   -0.9954602F,  -1.68848F,    -2.6805024F,  -1.8665622F,
-      -0.74172735F,  -1.5504712F,  -1.1088735F,  -1.5027426F,  -0.5923486F,
-      -1.6016834F,   -1.4421953F,  -2.0582387F,  -1.2855383F,  -2.1540859F,
-      -2.7084038F,   -2.2715313F,  -3.1359727F,  -3.889149F,   -1.7645671F,
-      -2.7270453F,   -2.7159917F,  -1.6480938F,  -2.3461785F,  -1.7550253F,
-      -2.1615856F,   -2.493019F,   -0.8652842F,  -2.5228133F,  -1.2112323F,
-      -2.1534994F,   -1.3788025F,  -1.7423189F,  -1.4958268F,  -1.4869766F,
-      -2.0654101F,   -1.9002194F,  -1.9358392F,  -1.6662083F,  -1.4289105F,
-      -1.0327193F,   -0.5623571F,  -1.8858297F,  -0.5369144F,  -2.3495378F,
-      -1.7125791F,   -2.6048331F,  -2.2549336F,  -1.612574F,   -1.5216318F,
-      -1.5781568F,   -1.1496346F,  -1.7695346F,  -1.4638554F,  -0.8767779F,
-      -1.2101067F,   -2.142437F,   -1.626275F,   -1.3299046F,  -0.9977174F,
-      -1.4451778F,   -1.3811227F,  -1.1860611F,  -1.5936171F,  -1.1490167F,
-      -1.0627433F,   -0.9264636F,  -2.3362594F,  -1.5739609F,  -0.8316783F,
-      -1.5804183F,   -1.4085934F,  -1.2536662F,  -1.9365257F,  -0.9311341F,
-      -1.8360862F,   -0.6169133F,  -2.232762F,   -1.0334637F,  -1.8971274F,
-      -2.126547F,    -2.255217F,   -1.0897174F,  -1.5509467F,  -1.4287041F,
-      -1.2560107F,   -1.0962985F,  -2.9490635F,  -3.5668F,     -2.2657528F,
-      -2.1464198F,   -3.4667325F,  -2.5064557F,  -1.2257534F,  -1.2389649F,
-      -1.0907525F,   -0.60024655F, -1.1530118F,  -1.8401506F,  -1.5492783F,
-      -0.6756837F,   -0.24469058F, -1.0329615F,  -2.987013F,   -1.5487025F,
-      -1.4398901F,   -1.6293949F,  -0.9009054F,  -0.8946747F,  -0.60428953F,
-      -0.89339495F,  -1.0776888F,  -1.5883293F,  -0.46680266F, -0.79770476F,
-      -1.2615963F,   -0.98183495F, -0.51274675F, -0.43124217F, -0.664403F,
-      -1.5457076F,   -1.7652079F,  -1.3257061F,  -0.3637579F,  -0.7623227F,
-      -2.609005F,    -0.81050825F, -1.9278439F,  -0.6034247F,  -1.0268025F,
-      -1.6719458F,   -1.3588866F,  -1.7700273F,  -1.2567153F,  -1.1861084F,
-      -1.1806511F,   -0.6478576F,  -0.86341923F, -1.2058573F,  -1.544769F,
-      -0.37224743F,  -1.0489378F,  -1.9057875F,  -0.42322475F, -0.73429334F,
-      -0.97595304F,  -1.8663304F,  -1.758928F,   -0.64933616F, -0.8901153F,
-      -0.9691978F,   -0.2981119F,  -1.0833641F,  -0.7601603F,  -1.0296438F,
-      -1.6964004F,   -2.0523257F,  -1.7584459F,  -0.65657943F, -0.16403455F,
-      -1.2319168F,   -1.8072089F,  -1.0185814F,  -1.3084793F,  -0.98584425F,
-      -0.7821027F,   -0.9248121F,  -0.92243993F, -0.4013858F,  -1.2600635F,
-      -1.3863034F,   -2.1454775F,  -1.568719F,   -0.715914F,   -1.2764679F,
-      -0.95361674F,  -1.0253495F,  -1.4204215F,  -1.6545286F,  -1.6195381F,
-      -1.3638228F,   -1.4132402F,  -0.65315926F, -1.177778F,   -0.75444806F,
-      -2.5061204F,   -1.3594847F,  -1.1844385F,  -0.30358243F, -1.2129152F,
-      -1.833605F,    -2.346814F,   -1.9963303F,  -1.3698094F,  -0.6998438F,
-      -2.6338859F,   -0.9983796F,  -0.8804827F,  -0.76047647F, -1.3877242F,
-      -1.6572715F,   -1.4839731F,  -0.8917327F,  -0.6601084F,  -1.9440768F,
-      -1.7400684F,   -1.7640239F,  -1.0320716F,  -1.058885F,   -1.6620815F,
-      -1.0966465F,   -1.3433994F,  -1.6307993F,  -1.1627939F,  -1.2972245F,
-      -1.7441502F,   -1.5629898F,  -0.4155792F,  -0.3667947F,  -2.2618482F,
-      -1.6833543F,   -0.81081116F, -1.0982511F,  -1.0192581F,  -1.186276F,
-      -0.88569397F,  -1.1536428F,  -0.4953206F,  -1.0943869F,  -0.52250767F,
-      -0.92010874F,  -0.34678644F, -1.3535992F,  -1.7352451F,  -0.35585392F,
-      -2.9314356F,   -0.56457573F, -1.5759547F,  -0.9908322F,  -1.3109908F,
-      -1.2872365F,   -1.2026273F,  -2.0014095F,  -2.4868767F,  -1.1792853F,
-      -1.3745917F,   -1.3955569F,  -1.58925F,    -2.011005F,   -0.6260796F,
-      -0.7658733F,   -1.6737357F,  -0.38964447F, -1.142839F,   -0.3666771F,
-      -1.6169949F,   -2.6627262F,  -1.8414136F,  -1.0838122F,  -1.4229995F,
-      -1.8928032F,   -0.93601763F, -0.02974391F, -1.8421193F,  -1.5400323F,
-      -1.7524343F,   -1.0076946F,  -0.7639929F,  -2.033944F,   -1.4285347F,
-      -1.402747F,    -0.46891677F, -1.3538638F,  -1.6421899F,  -1.2112697F,
-      -0.8817958F,   -1.460174F,   -0.13861826F, -0.60391057F, -0.5412307F,
-      -1.0441456F,   -2.0605583F,  -1.2915566F,  -1.5290296F,  -1.3251731F,
-      -1.2674427F,   -0.99035454F, -0.9307525F,  -0.59141225F, -1.4272535F,
-      -2.8252997F,   -1.0927011F,  -0.6886908F,  -1.2561188F,  -0.8572454F,
-      0.05080545F,   -0.77956355F, -1.2312267F,  -1.7179267F,  -1.4142076F,
-      -1.4054425F,   -0.45323455F, -1.9162606F,  -0.22824472F, -2.4196353F,
-      -0.75672424F,  -1.3550245F,  -2.0006304F,  -1.9351643F,  -1.4593577F,
-      -0.49430257F,  -1.5277265F,  -0.9711675F,  -0.89917207F, -1.6345088F,
-      -0.52230436F,  -1.2761695F,  -0.6880954F,  -0.5373302F,  -0.55663097F,
-      -1.6249177F,   -0.7329637F,  -1.9967912F,  -0.5006803F,  -0.9479854F,
-      -1.8116717F,   -1.4948385F,  -0.34804502F, -0.87828475F, -1.553152F,
-      -0.6888098F,   -1.3739216F,  -0.9986796F,  -1.4506269F,  -2.2021651F,
-      -0.92238843F,  -1.5663908F,  -0.6665425F,  -1.4280668F,  -0.415592F,
-      -2.014189F,    -1.1751968F,  -1.3990675F,  -1.2896094F,  -0.7126297F,
-      -0.6546924F,   -1.4847366F,  -0.5427979F,  -0.5284885F,  -1.4768016F,
-      -1.4942185F,   -1.52363F,    -1.3213573F,  -1.4571203F,  -0.48881605F,
-      -1.2646688F,   -1.9732125F,  0.008842722F, -1.4687293F,  -1.0509233F,
-      -1.0778831F,   -1.7733475F,  -1.8880706F,  -2.076587F,   -2.3423243F,
-      -1.2481996F,   -1.1400212F,  -1.3741453F,  -0.7843554F,  -1.09081F,
-      -1.909957F,    -0.38323978F, -1.1229229F,  -1.0480849F,  -1.0722302F,
-      -1.4875617F,   -0.73422754F, -1.302817F,   -1.1831713F,  -0.41065308F,
-      -0.8607131F,   -1.2459512F,  -2.2336302F,  -1.3051665F,  -1.5856098F,
-      -2.391909F,    -1.5262725F,  -0.5449897F,  -1.9746288F,  -1.824641F,
-      -0.722719F,    -0.46856755F, -1.1104232F,  -2.32481F,    -1.7115228F,
-      -0.17298871F,  -1.3664875F,  -1.3997573F,  0.18691726F,  -1.2343235F,
-      -2.3059866F,   -0.5494287F,  -1.8170602F,  -1.1648434F,  -1.3599619F,
-      -1.5156635F,   -1.2383856F,  -1.9386334F,  -0.5267248F,  -0.8786106F,
-      -1.9906975F,   -0.3567402F,  -1.332185F,   -1.307163F,   -0.8984295F,
-      -1.092647F,    -0.7633946F,  -1.0537627F,  -1.9604243F,  -1.6330518F,
-      -1.6135159F,   -0.97077036F, -1.8680564F,  -1.5610089F,  0.10498382F,
-      -1.58286F,     -1.3002741F,  -1.327622F,   -1.1852363F,  -1.9997921F,
-      -1.1485991F,   -0.9396992F,  -1.4269558F,  -1.0185913F,  -0.8393079F,
-      -1.4762307F,   -0.32254666F, -1.6930571F,  -0.54878694F, -1.3480331F,
-      0.07314402F,   -1.9590307F,  -1.6534966F,  -1.1579821F,  -0.5732244F,
-      -1.2381449F,   -1.554401F,   -0.6580394F,  -1.2062135F,  -0.6195583F,
-      -1.9573842F,   -0.53588337F, -2.0663927F,  -1.6958071F,  -1.5461465F,
-      -0.8328068F,   -0.24059503F, -1.7646624F,  -1.2879939F,  -0.3536446F,
-      -0.46417803F,  -1.6911535F,  -0.841431F,   -0.12766494F, -0.6945708F,
-      -1.6700666F,   -1.6036311F,  -0.547183F,   -1.4533756F,  -0.640389F,
-      -1.4191339F,   -0.8585301F,  -0.5830716F,  -1.0481184F,  -1.5493153F,
-      -1.6404929F,   -2.0844073F,  -1.1808408F,  -0.8303477F,  -1.0975056F,
-      -0.7872949F,   -0.7823525F,  -1.7959977F,  -0.9469753F,  -1.1377589F,
-      -2.2315426F,   -0.36457714F, -1.4460163F,  -1.8814303F,  -1.0602432F,
-      -1.5318176F,   -2.0840316F,  -1.5375965F,  -1.2114611F,  -0.15431586F,
-      -2.581712F,    -1.4116459F,  -1.4254446F,  -2.2283392F,  -1.5132113F,
-      0.09478392F,   -1.9365648F,  -1.7311155F,  -1.5508927F,  -1.7366124F,
-      -1.4239485F,   -1.0490313F,  -1.5821211F,  -0.856916F,   -2.4616094F,
-      -1.980789F,    -1.5473933F,  -1.6851387F,  -1.507844F,   -1.4452156F,
-      -1.8265554F,   -2.1373315F,  -1.6530868F,  -0.789425F,   -1.654387F,
-      -0.6232173F,   -1.1789554F,  -1.3557018F,  -0.9147692F,  -2.2815502F,
-      -1.411296F,    -0.28077346F, -1.3795278F,  -1.3733015F,  -0.33885235F,
-      -1.505635F,    -1.3187894F,  -1.2945806F,  -0.74558765F, -0.93464684F,
-      -0.9687904F,   -0.5564198F,  -0.4733817F,  -0.96583F,    -0.31380782F,
-      -1.0505272F,   -1.0570685F,  -1.0074773F,  -0.24504572F, -1.1334548F,
-      -1.7930477F,   -2.059837F,   -0.6650362F,  -1.7818173F,  -1.8765347F,
-      -1.3030164F,   -1.5190561F,  -1.3013806F,  -0.42582512F, -0.87638867F,
-      -1.8902118F,   -1.4392786F,  -0.84340024F, -0.9203861F,  -1.557344F,
-      -1.6220553F,   -1.5602875F,  -1.600596F,   0.5291545F,   -1.3484418F,
-      -1.4739878F,   -1.1387783F,  -1.035548F,   -1.6784449F,  -3.589241F,
-      -1.4856894F,   -0.6811611F,  -1.4261751F,  -1.22871F,    -0.4183113F,
-      -0.8382664F,   -0.7955347F,  -1.6902254F,  -0.816005F,   -1.2472041F,
-      -0.10117589F,  -1.2862852F,  -1.5913817F,  -1.4392867F,  -1.2648693F,
-      -1.6052418F,   -1.943844F,   0.17797667F,  -1.9840869F,  -1.6738104F,
-      -1.1238723F,   -1.2521054F,  -0.7696606F,  -0.26148194F, -1.1123211F,
-      -1.6656864F,   -1.2206467F,  0.288517F,    -1.2009548F,  -0.22840007F,
-      0.089232735F,  -0.9511159F,  -0.3548973F,  -1.6633227F,  -1.6825835F,
-      -0.6383395F,   -0.09871808F, -0.50748754F, -1.4011986F,  -1.165391F,
-      -2.2436833F,   -2.1180315F,  -1.8700461F,  -1.6797866F,  -0.8376126F,
-      -0.030776963F, -0.79666245F, -1.0686938F,  -0.3665927F,  -2.1808505F,
-      -1.2425348F,   -1.8737378F,  -2.5514138F,  -1.2296082F,  -0.4567933F,
-      0.0037896782F, -1.9343346F,  -1.2759273F,  -2.138587F,   -1.6025567F,
-      -1.406446F,    -2.550507F,   -2.8010411F,  -2.0524926F,  -2.8865519F,
-      -1.2358024F,   -1.5560523F,  -1.8754023F,  -2.2732556F,  -2.0622654F,
-      -1.3733506F,   -1.9976413F,  -1.8250451F,  -1.6621158F,  -1.9729637F,
-      -1.4852827F,   -1.8170816F,  -2.371207F,   -1.4397407F,  -1.2245022F,
-      -1.8249779F,   -1.7985399F,  -1.0027598F,  -1.152339F,   -3.1438997F,
-      -1.2392491F,   -0.87904716F, -1.806107F,   -2.1491976F,  -2.196601F,
-      -1.2837044F,   -0.41907966F, -1.1992905F,  -0.44012666F, -0.8536202F,
-      -2.049602F,    -1.4686879F,  -1.1482613F,  -1.600719F,   -1.8992459F,
-      -0.2585676F,   -1.4612074F,  -0.33580017F, -1.4303408F,  -1.784681F,
-      -1.4883083F,   -1.3168578F,  -1.0878826F,  -1.5712306F,  -1.3094815F,
-      -1.4384066F,   -3.11718F,    -1.4496112F,  -1.9235661F,  -0.8190702F,
-      -1.6752464F,   -2.10863F,    -2.4719324F,  -2.9753714F,  -2.0674376F,
-      -1.9180018F,   -2.5039444F,  -2.2602386F,  -1.8705391F,  -1.0808167F};
+  static cell_wrap_11 outT_f12[2];
+  static cell_wrap_14 outT_f42[2];
+  static cell_wrap_16 outT_f100[2];
   static float t0_Weights[1024000];
-  static float outT_f2_0_f1[301056];
-  static float outT_f6_0_f1[181888];
-  static float b_tempData[90944];
-  static float outT_f28_0_f1[90944];
-  static float tempData[75264];
-  static float fv[50176];
-  static float outT_f90_0_f1[50176];
-  static float c_tempData[45472];
-  static float outT_f5_0_f1[45472];
-  static float outT_f8_0_f1[45472];
-  static float outT_f26_0_f1[22736];
-  static float outT_f27_0_f1[22736];
-  static float outT_f30_0_f1[22736];
+  static float X[301056];
+  static float outT_f7_0_f1[188160];
+  static float e_tempData[90944];
+  static float outT_f34_0_f1[90944];
+  static float tempData[90944];
+  static float Z[75264];
+  static float outT_f123_0_f1[50176];
+  static float outT_f124_0_f1[50176];
+  static float outT_f15_0_f1[47040];
+  static float outT_f5_0_f1[47040];
+  static float outT_f9_0_f1[47040];
+  static float b_tempData[45472];
+  static float outT_f10_0_f1[45472];
+  static float c_tempData[22736];
+  static float outT_f35_0_f1[22736];
+  static float outT_f36_0_f1[22736];
   static float outT_f4_0_f1[18816];
-  static boolean_T bufferInitialized;
-  float outT_f68_0_f1[11368];
-  float outT_f69_0_f1[11368];
-  float outT_f72_0_f1[11368];
+  static float fv[1000];
+  static bool bufferInitialized;
+  float outT_f93_0_f1[11368];
+  float outT_f94_0_f1[11368];
+  float outT_f97_0_f1[11368];
   float d_tempData[1024];
-  int filterHeightIdx;
-  int filterWidthIdx;
-  int outChannelIdx;
-  int outHeightIdx;
-  int outWidthIdx;
+  int i;
   if (!bufferInitialized) {
     readDnnConstants_real32_T(&t0_Weights[0],
-                              "./embeddedDir//largeDnnConstants_5046013.bin",
+                              "./embeddedDir//largeDnnConstants_5476399.bin",
                               1024000);
+    readDnnConstants_real32_T(
+        &fv[0], "./embeddedDir//largeDnnConstants_5476403.bin", 1000);
   }
   bufferInitialized = true;
-  conv2dDirectOptimizedColMajor(inputsT_0_f1, outT_f2_0_f1);
-  for (outChannelIdx = 0; outChannelIdx < 24; outChannelIdx++) {
-    for (outWidthIdx = 0; outWidthIdx < 56; outWidthIdx++) {
-      int inputWidthIdx_tmp;
-      inputWidthIdx_tmp = outWidthIdx << 1;
-      for (outHeightIdx = 0; outHeightIdx < 56; outHeightIdx++) {
-        float opValue;
-        int inputHeightIdx_tmp;
-        inputHeightIdx_tmp = outHeightIdx << 1;
-        opValue = -3.402823466E+38F;
-        if ((inputHeightIdx_tmp > 0) && (inputWidthIdx_tmp > 0) &&
-            (inputHeightIdx_tmp + 3 <= 112) && (inputWidthIdx_tmp + 3 <= 112)) {
-          for (filterWidthIdx = 0; filterWidthIdx < 3; filterWidthIdx++) {
-            int inputWidthIdx;
-            inputWidthIdx = (inputHeightIdx_tmp +
-                             112 * ((filterWidthIdx + inputWidthIdx_tmp) - 1)) +
-                            12544 * outChannelIdx;
-            opValue = fmaxf(opValue, outT_f2_0_f1[inputWidthIdx - 1]);
-            opValue = fmaxf(opValue, outT_f2_0_f1[inputWidthIdx]);
-            opValue = fmaxf(opValue, outT_f2_0_f1[inputWidthIdx + 1]);
-          }
-        } else {
-          for (filterWidthIdx = 0; filterWidthIdx < 3; filterWidthIdx++) {
-            int inputWidthIdx;
-            inputWidthIdx = filterWidthIdx + inputWidthIdx_tmp;
-            for (filterHeightIdx = 0; filterHeightIdx < 3; filterHeightIdx++) {
-              float y;
-              int inputHeightIdx;
-              inputHeightIdx = filterHeightIdx + inputHeightIdx_tmp;
-              if ((inputHeightIdx > 0) && (inputWidthIdx > 0)) {
-                y = outT_f2_0_f1[((inputHeightIdx + 112 * (inputWidthIdx - 1)) +
-                                  12544 * outChannelIdx) -
-                                 1];
-              } else {
-                y = -3.402823466E+38F;
-              }
-              opValue = fmaxf(opValue, y);
-            }
-          }
-        }
-        tempData[(outHeightIdx + 56 * outWidthIdx) + 3136 * outChannelIdx] =
-            opValue;
-      }
-    }
-  }
-  b_conv2dDirectOptimizedColMajor(tempData, outT_f4_0_f1);
+  conv2dDirectOptimizedColMajor(inputsT_0_f1, X);
+  pool(X, Z);
+  b_conv2dDirectOptimizedColMajor(Z, outT_f4_0_f1);
   c_conv2dDirectOptimizedColMajor(outT_f4_0_f1, outT_f5_0_f1);
-  d_conv2dDirectOptimizedColMajor(tempData, outT_f6_0_f1);
-  e_conv2dDirectOptimizedColMajor(outT_f6_0_f1, c_tempData);
-  f_conv2dDirectOptimizedColMajor(c_tempData, outT_f8_0_f1);
-  memcpy(&outT_f28_0_f1[0], &outT_f5_0_f1[0], 45472U * sizeof(float));
-  memcpy(&outT_f28_0_f1[45472], &outT_f8_0_f1[0], 45472U * sizeof(float));
-  Shape_To_SliceLayer1000_predict(outT_f28_0_f1, outT_f10[0].f1,
-                                  outT_f10[1].f1);
-  g_conv2dDirectOptimizedColMajor(outT_f10[0].f1, outT_f5_0_f1);
-  h_conv2dDirectOptimizedColMajor(outT_f5_0_f1, c_tempData);
-  i_conv2dDirectOptimizedColMajor(c_tempData, outT_f5_0_f1);
-  memcpy(&outT_f28_0_f1[0], &outT_f10[1].f1[0], 45472U * sizeof(float));
-  memcpy(&outT_f28_0_f1[45472], &outT_f5_0_f1[0], 45472U * sizeof(float));
-  Shape_To_SliceLayer1000_predict(outT_f28_0_f1, outT_f10[0].f1,
-                                  outT_f10[1].f1);
-  j_conv2dDirectOptimizedColMajor(outT_f10[0].f1, outT_f5_0_f1);
-  k_conv2dDirectOptimizedColMajor(outT_f5_0_f1, c_tempData);
-  l_conv2dDirectOptimizedColMajor(c_tempData, outT_f5_0_f1);
-  memcpy(&outT_f28_0_f1[0], &outT_f10[1].f1[0], 45472U * sizeof(float));
-  memcpy(&outT_f28_0_f1[45472], &outT_f5_0_f1[0], 45472U * sizeof(float));
-  Shape_To_SliceLayer1000_predict(outT_f28_0_f1, outT_f10[0].f1,
-                                  outT_f10[1].f1);
-  m_conv2dDirectOptimizedColMajor(outT_f10[0].f1, outT_f5_0_f1);
-  n_conv2dDirectOptimizedColMajor(outT_f5_0_f1, c_tempData);
-  o_conv2dDirectOptimizedColMajor(c_tempData, outT_f5_0_f1);
-  memcpy(&outT_f28_0_f1[0], &outT_f10[1].f1[0], 45472U * sizeof(float));
-  memcpy(&outT_f28_0_f1[45472], &outT_f5_0_f1[0], 45472U * sizeof(float));
+  fromBlockedLayoutTransform(&outT_f5_0_f1[0], &b_tempData[0]);
+  d_conv2dDirectOptimizedColMajor(Z, outT_f7_0_f1);
+  e_conv2dDirectOptimizedColMajor(outT_f7_0_f1, outT_f5_0_f1);
+  f_conv2dDirectOptimizedColMajor(outT_f5_0_f1, outT_f9_0_f1);
+  fromBlockedLayoutTransform(&outT_f9_0_f1[0], &outT_f10_0_f1[0]);
+  memcpy(&tempData[0], &b_tempData[0], 45472U * sizeof(float));
+  memcpy(&tempData[45472], &outT_f10_0_f1[0], 45472U * sizeof(float));
+  Shape_To_SliceLayer1000_predict(tempData, outT_f12[0].f1, outT_f12[1].f1);
+  toBlockedLayoutTransform(&outT_f12[0].f1[0], &outT_f5_0_f1[0]);
+  g_conv2dDirectOptimizedColMajor(outT_f5_0_f1, outT_f9_0_f1);
+  h_conv2dDirectOptimizedColMajor(outT_f9_0_f1, outT_f15_0_f1);
+  i_conv2dDirectOptimizedColMajor(outT_f15_0_f1, outT_f5_0_f1);
+  fromBlockedLayoutTransform(&outT_f5_0_f1[0], &b_tempData[0]);
+  memcpy(&tempData[0], &outT_f12[1].f1[0], 45472U * sizeof(float));
+  memcpy(&tempData[45472], &b_tempData[0], 45472U * sizeof(float));
+  Shape_To_SliceLayer1000_predict(tempData, outT_f12[0].f1, outT_f12[1].f1);
+  toBlockedLayoutTransform(&outT_f12[0].f1[0], &outT_f5_0_f1[0]);
+  j_conv2dDirectOptimizedColMajor(outT_f5_0_f1, outT_f9_0_f1);
+  k_conv2dDirectOptimizedColMajor(outT_f9_0_f1, outT_f15_0_f1);
+  l_conv2dDirectOptimizedColMajor(outT_f15_0_f1, outT_f5_0_f1);
+  fromBlockedLayoutTransform(&outT_f5_0_f1[0], &b_tempData[0]);
+  memcpy(&tempData[0], &outT_f12[1].f1[0], 45472U * sizeof(float));
+  memcpy(&tempData[45472], &b_tempData[0], 45472U * sizeof(float));
+  Shape_To_SliceLayer1000_predict(tempData, outT_f12[0].f1, outT_f12[1].f1);
+  toBlockedLayoutTransform(&outT_f12[0].f1[0], &outT_f5_0_f1[0]);
+  m_conv2dDirectOptimizedColMajor(outT_f5_0_f1, outT_f9_0_f1);
+  n_conv2dDirectOptimizedColMajor(outT_f9_0_f1, outT_f15_0_f1);
+  o_conv2dDirectOptimizedColMajor(outT_f15_0_f1, outT_f5_0_f1);
+  fromBlockedLayoutTransform(&outT_f5_0_f1[0], &b_tempData[0]);
+  memcpy(&tempData[0], &outT_f12[1].f1[0], 45472U * sizeof(float));
+  memcpy(&tempData[45472], &b_tempData[0], 45472U * sizeof(float));
   /*  Returns reverse-ONNX ordering numeric array */
   /*    Copyright 2024 The MathWorks, Inc.   */
   /*  Permute into reverse ONNX ordering */
@@ -627,58 +881,72 @@ void predict(const float inputsT_0_f1[150528], float outputs_0_f1[1000])
   /*  ndims >= 2 */
   /*  Use the inverse of the user's permutation. This is not just the */
   /*  flip of the permutation vector. */
-  permute(outT_f28_0_f1, b_tempData);
-  b_permute(b_tempData, outT_f28_0_f1);
-  permute(outT_f28_0_f1, b_tempData);
-  p_conv2dDirectOptimizedColMajor(b_tempData, outT_f26_0_f1);
-  q_conv2dDirectOptimizedColMajor(outT_f26_0_f1, outT_f27_0_f1);
-  r_conv2dDirectOptimizedColMajor(b_tempData, outT_f28_0_f1);
-  s_conv2dDirectOptimizedColMajor(outT_f28_0_f1, outT_f26_0_f1);
-  t_conv2dDirectOptimizedColMajor(outT_f26_0_f1, outT_f30_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f27_0_f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f30_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  u_conv2dDirectOptimizedColMajor(outT_f32[0].f1, outT_f26_0_f1);
-  v_conv2dDirectOptimizedColMajor(outT_f26_0_f1, outT_f30_0_f1);
-  w_conv2dDirectOptimizedColMajor(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  x_conv2dDirectOptimizedColMajor(outT_f32[0].f1, outT_f26_0_f1);
-  y_conv2dDirectOptimizedColMajor(outT_f26_0_f1, outT_f30_0_f1);
-  ab_conv2dDirectOptimizedColMajo(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  bb_conv2dDirectOptimizedColMajo(outT_f32[0].f1, outT_f26_0_f1);
-  cb_conv2dDirectOptimizedColMajo(outT_f26_0_f1, outT_f30_0_f1);
-  db_conv2dDirectOptimizedColMajo(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  eb_conv2dDirectOptimizedColMajo(outT_f32[0].f1, outT_f26_0_f1);
-  fb_conv2dDirectOptimizedColMajo(outT_f26_0_f1, outT_f30_0_f1);
-  gb_conv2dDirectOptimizedColMajo(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  hb_conv2dDirectOptimizedColMajo(outT_f32[0].f1, outT_f26_0_f1);
-  ib_conv2dDirectOptimizedColMajo(outT_f26_0_f1, outT_f30_0_f1);
-  jb_conv2dDirectOptimizedColMajo(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  kb_conv2dDirectOptimizedColMajo(outT_f32[0].f1, outT_f26_0_f1);
-  lb_conv2dDirectOptimizedColMajo(outT_f26_0_f1, outT_f30_0_f1);
-  mb_conv2dDirectOptimizedColMajo(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
-  Shape_To_SliceLayer1004_predict(outT_f5_0_f1, outT_f32[0].f1, outT_f32[1].f1);
-  nb_conv2dDirectOptimizedColMajo(outT_f32[0].f1, outT_f26_0_f1);
-  ob_conv2dDirectOptimizedColMajo(outT_f26_0_f1, outT_f30_0_f1);
-  pb_conv2dDirectOptimizedColMajo(outT_f30_0_f1, outT_f26_0_f1);
-  memcpy(&outT_f5_0_f1[0], &outT_f32[1].f1[0], 22736U * sizeof(float));
-  memcpy(&outT_f5_0_f1[22736], &outT_f26_0_f1[0], 22736U * sizeof(float));
+  permute(tempData, outT_f34_0_f1);
+  b_permute(outT_f34_0_f1, tempData);
+  permute(tempData, e_tempData);
+  b_toBlockedLayoutTransform(&e_tempData[0], &outT_f34_0_f1[0]);
+  p_conv2dDirectOptimizedColMajor(outT_f34_0_f1, outT_f35_0_f1);
+  q_conv2dDirectOptimizedColMajor(outT_f35_0_f1, outT_f36_0_f1);
+  r_conv2dDirectOptimizedColMajor(outT_f34_0_f1, tempData);
+  s_conv2dDirectOptimizedColMajor(tempData, outT_f35_0_f1);
+  t_conv2dDirectOptimizedColMajor(outT_f35_0_f1, c_tempData);
+  cat(outT_f36_0_f1, c_tempData, b_tempData);
+  b_fromBlockedLayoutTransform(&b_tempData[0], &outT_f10_0_f1[0]);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  u_conv2dDirectOptimizedColMajor(outT_f35_0_f1, c_tempData);
+  v_conv2dDirectOptimizedColMajor(c_tempData, outT_f35_0_f1);
+  w_conv2dDirectOptimizedColMajor(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  x_conv2dDirectOptimizedColMajor(outT_f35_0_f1, c_tempData);
+  y_conv2dDirectOptimizedColMajor(c_tempData, outT_f35_0_f1);
+  ab_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  bb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  cb_conv2dDirectOptimizedColMajo(c_tempData, outT_f35_0_f1);
+  db_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  eb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  fb_conv2dDirectOptimizedColMajo(c_tempData, outT_f35_0_f1);
+  gb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  hb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  ib_conv2dDirectOptimizedColMajo(c_tempData, outT_f35_0_f1);
+  jb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  kb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  lb_conv2dDirectOptimizedColMajo(c_tempData, outT_f35_0_f1);
+  mb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  Shape_To_SliceLayer1004_predict(outT_f10_0_f1, outT_f42[0].f1,
+                                  outT_f42[1].f1);
+  c_toBlockedLayoutTransform(&outT_f42[0].f1[0], &outT_f35_0_f1[0]);
+  nb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  ob_conv2dDirectOptimizedColMajo(c_tempData, outT_f35_0_f1);
+  pb_conv2dDirectOptimizedColMajo(outT_f35_0_f1, c_tempData);
+  c_fromBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
   /*  Returns reverse-ONNX ordering numeric array */
   /*    Copyright 2024 The MathWorks, Inc.   */
   /*  Permute into reverse ONNX ordering */
@@ -706,37 +974,45 @@ void predict(const float inputsT_0_f1[150528], float outputs_0_f1[1000])
   /*  ndims >= 2 */
   /*  Use the inverse of the user's permutation. This is not just the */
   /*  flip of the permutation vector. */
-  d_permute(outT_f5_0_f1, outT_f8_0_f1);
-  e_permute(outT_f8_0_f1, outT_f5_0_f1);
-  d_permute(outT_f5_0_f1, c_tempData);
-  qb_conv2dDirectOptimizedColMajo(c_tempData, outT_f68_0_f1);
-  rb_conv2dDirectOptimizedColMajo(outT_f68_0_f1, outT_f69_0_f1);
-  sb_conv2dDirectOptimizedColMajo(c_tempData, outT_f5_0_f1);
-  tb_conv2dDirectOptimizedColMajo(outT_f5_0_f1, outT_f68_0_f1);
-  ub_conv2dDirectOptimizedColMajo(outT_f68_0_f1, outT_f72_0_f1);
-  memcpy(&outT_f26_0_f1[0], &outT_f69_0_f1[0], 11368U * sizeof(float));
-  memcpy(&outT_f26_0_f1[11368], &outT_f72_0_f1[0], 11368U * sizeof(float));
-  Shape_To_SliceLayer1012_predict(outT_f26_0_f1, outT_f74[0].f1,
-                                  outT_f74[1].f1);
-  vb_conv2dDirectOptimizedColMajo(outT_f74[0].f1, outT_f68_0_f1);
-  wb_conv2dDirectOptimizedColMajo(outT_f68_0_f1, outT_f72_0_f1);
-  xb_conv2dDirectOptimizedColMajo(outT_f72_0_f1, outT_f68_0_f1);
-  memcpy(&outT_f26_0_f1[0], &outT_f74[1].f1[0], 11368U * sizeof(float));
-  memcpy(&outT_f26_0_f1[11368], &outT_f68_0_f1[0], 11368U * sizeof(float));
-  Shape_To_SliceLayer1012_predict(outT_f26_0_f1, outT_f74[0].f1,
-                                  outT_f74[1].f1);
-  yb_conv2dDirectOptimizedColMajo(outT_f74[0].f1, outT_f68_0_f1);
-  ac_conv2dDirectOptimizedColMajo(outT_f68_0_f1, outT_f72_0_f1);
-  bc_conv2dDirectOptimizedColMajo(outT_f72_0_f1, outT_f68_0_f1);
-  memcpy(&outT_f26_0_f1[0], &outT_f74[1].f1[0], 11368U * sizeof(float));
-  memcpy(&outT_f26_0_f1[11368], &outT_f68_0_f1[0], 11368U * sizeof(float));
-  Shape_To_SliceLayer1012_predict(outT_f26_0_f1, outT_f74[0].f1,
-                                  outT_f74[1].f1);
-  cc_conv2dDirectOptimizedColMajo(outT_f74[0].f1, outT_f68_0_f1);
-  dc_conv2dDirectOptimizedColMajo(outT_f68_0_f1, outT_f72_0_f1);
-  ec_conv2dDirectOptimizedColMajo(outT_f72_0_f1, outT_f68_0_f1);
-  memcpy(&outT_f26_0_f1[0], &outT_f74[1].f1[0], 11368U * sizeof(float));
-  memcpy(&outT_f26_0_f1[11368], &outT_f68_0_f1[0], 11368U * sizeof(float));
+  cat(outT_f42[1].f1, outT_f35_0_f1, outT_f10_0_f1);
+  d_permute(outT_f10_0_f1, b_tempData);
+  e_permute(b_tempData, outT_f10_0_f1);
+  d_permute(outT_f10_0_f1, b_tempData);
+  d_toBlockedLayoutTransform(&b_tempData[0], &outT_f10_0_f1[0]);
+  qb_conv2dDirectOptimizedColMajo(outT_f10_0_f1, outT_f93_0_f1);
+  rb_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f94_0_f1);
+  sb_conv2dDirectOptimizedColMajo(outT_f10_0_f1, b_tempData);
+  tb_conv2dDirectOptimizedColMajo(b_tempData, outT_f93_0_f1);
+  ub_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  memcpy(&outT_f35_0_f1[0], &outT_f94_0_f1[0], 11368U * sizeof(float));
+  memcpy(&outT_f35_0_f1[11368], &outT_f97_0_f1[0], 11368U * sizeof(float));
+  d_fromBlockedLayoutTransform(&outT_f35_0_f1[0], &c_tempData[0]);
+  Shape_To_SliceLayer1012_predict(c_tempData, outT_f100[0].f1, outT_f100[1].f1);
+  e_toBlockedLayoutTransform(&outT_f100[0].f1[0], &outT_f93_0_f1[0]);
+  vb_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  wb_conv2dDirectOptimizedColMajo(outT_f97_0_f1, outT_f93_0_f1);
+  xb_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  e_fromBlockedLayoutTransform(&outT_f97_0_f1[0], &outT_f93_0_f1[0]);
+  memcpy(&outT_f35_0_f1[0], &outT_f100[1].f1[0], 11368U * sizeof(float));
+  memcpy(&outT_f35_0_f1[11368], &outT_f93_0_f1[0], 11368U * sizeof(float));
+  Shape_To_SliceLayer1012_predict(outT_f35_0_f1, outT_f100[0].f1,
+                                  outT_f100[1].f1);
+  e_toBlockedLayoutTransform(&outT_f100[0].f1[0], &outT_f93_0_f1[0]);
+  yb_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  ac_conv2dDirectOptimizedColMajo(outT_f97_0_f1, outT_f93_0_f1);
+  bc_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  e_fromBlockedLayoutTransform(&outT_f97_0_f1[0], &outT_f93_0_f1[0]);
+  memcpy(&outT_f35_0_f1[0], &outT_f100[1].f1[0], 11368U * sizeof(float));
+  memcpy(&outT_f35_0_f1[11368], &outT_f93_0_f1[0], 11368U * sizeof(float));
+  Shape_To_SliceLayer1012_predict(outT_f35_0_f1, outT_f100[0].f1,
+                                  outT_f100[1].f1);
+  e_toBlockedLayoutTransform(&outT_f100[0].f1[0], &outT_f93_0_f1[0]);
+  cc_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  dc_conv2dDirectOptimizedColMajo(outT_f97_0_f1, outT_f93_0_f1);
+  ec_conv2dDirectOptimizedColMajo(outT_f93_0_f1, outT_f97_0_f1);
+  e_fromBlockedLayoutTransform(&outT_f97_0_f1[0], &outT_f93_0_f1[0]);
+  memcpy(&outT_f35_0_f1[0], &outT_f100[1].f1[0], 11368U * sizeof(float));
+  memcpy(&outT_f35_0_f1[11368], &outT_f93_0_f1[0], 11368U * sizeof(float));
   /*  Returns reverse-ONNX ordering numeric array */
   /*    Copyright 2024 The MathWorks, Inc.   */
   /*  Permute into reverse ONNX ordering */
@@ -764,10 +1040,12 @@ void predict(const float inputsT_0_f1[150528], float outputs_0_f1[1000])
   /*  ndims >= 2 */
   /*  Use the inverse of the user's permutation. This is not just the */
   /*  flip of the permutation vector. */
-  g_permute(outT_f26_0_f1, outT_f27_0_f1);
-  h_permute(outT_f27_0_f1, outT_f30_0_f1);
-  g_permute(outT_f30_0_f1, outT_f27_0_f1);
-  fc_conv2dDirectOptimizedColMajo(outT_f27_0_f1, outT_f90_0_f1);
+  g_permute(outT_f35_0_f1, outT_f36_0_f1);
+  h_permute(outT_f36_0_f1, outT_f35_0_f1);
+  g_permute(outT_f35_0_f1, c_tempData);
+  f_toBlockedLayoutTransform(&c_tempData[0], &outT_f35_0_f1[0]);
+  fc_conv2dDirectOptimizedColMajo(outT_f35_0_f1, outT_f123_0_f1);
+  f_fromBlockedLayoutTransform(&outT_f123_0_f1[0], &outT_f124_0_f1[0]);
   /*  Returns reverse-ONNX ordering numeric array */
   /*    Copyright 2024 The MathWorks, Inc.   */
   /*  Permute into reverse ONNX ordering */
@@ -777,18 +1055,20 @@ void predict(const float inputsT_0_f1[150528], float outputs_0_f1[1000])
   /*  Copyright 2024 The MathWorks, Inc. */
   /*  Find the new ONNX shape */
   /*  Append 1's to shape if numDims<2 */
-  j_permute(outT_f90_0_f1, fv);
-  mean(fv, d_tempData);
+  j_permute(outT_f124_0_f1, outT_f123_0_f1);
+  mean(outT_f123_0_f1, d_tempData);
   /*  Set graph output arguments */
   /*  Returns DLT ordering */
   /*    Copyright 2024 The MathWorks, Inc. */
   /*  ndims >= 2 */
   /*  Use the inverse of the user's permutation. This is not just the */
   /*  flip of the permutation vector. */
-  c_matrixMultiply472939278431058(1000, 1024, 1, 128, 128, 128, &t0_Weights[0],
+  c_matrixMultiply509232298252315(1000, 1024, 1, 64, 64, 64, &t0_Weights[0],
                                   &d_tempData[0], &outputs_0_f1[0]);
-  for (filterWidthIdx = 0; filterWidthIdx < 1000; filterWidthIdx++) {
-    outputs_0_f1[filterWidthIdx] += fv1[filterWidthIdx];
+  for (i = 0; i <= 996; i += 4) {
+    float32x4_t r;
+    r = vld1q_f32(&outputs_0_f1[i]);
+    vst1q_f32(&outputs_0_f1[i], vaddq_f32(r, vld1q_f32(&fv[i])));
   }
 }
 
